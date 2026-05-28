@@ -1,0 +1,2881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vixon — Faster Brain. Faster Body.</title>
+<meta name="description" content="The cognitive training system for athletes. LED smart vest, AI coaching app, real-time performance data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700;1,800&family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,800;1,900&family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+
+/* ════════════════════════════════════════
+   RESET & TOKENS
+════════════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --lime: #D2FF00;
+  --black: #060606;
+  --offblack: #0D0D0D;
+  --dark: #111111;
+  --mid: #1A1A1A;
+  --border: rgba(255,255,255,0.07);
+  --white: #F2F2EE;
+  --muted: rgba(242,242,238,0.42);
+  --red: #FF3B3B;
+  --nav-h: 64px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --display-font: 'Inter', sans-serif;
+  --em-font: 'Inter', sans-serif;
+  --em-style: italic;
+  --em-weight: 800;
+  --em-spacing: -.03em;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+img { display: block; max-width: 100%; }
+a   { text-decoration: none; color: inherit; }
+button { cursor: pointer; }
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: var(--black); }
+::-webkit-scrollbar-thumb { background: var(--lime); border-radius: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* ════════════════════════════════════════
+   VIDEO INTRO
+════════════════════════════════════════ */
+#video-intro {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--black);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+#video-intro.hidden { opacity: 0; pointer-events: none; transform: scale(1.04); }
+
+.led-scene {
+  position: absolute; inset: 0;
+  background: #090909;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.led-scene::before {
+  content: ''; position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 55% 35% at 50% 55%, rgba(200,244,0,.07) 0%, transparent 70%),
+    radial-gradient(ellipse 25% 20% at 35% 40%, rgba(200,244,0,.04) 0%, transparent 60%);
+}
+.field-silhouette { position:absolute; bottom:0; left:0; right:0; height:38%; background:linear-gradient(to top,#0a0d08 0%,transparent 100%); }
+.player-shape { position:relative; width:180px; height:340px; }
+.led-grid { position:absolute; top:80px; left:50%; transform:translateX(-50%); display:grid; grid-template-columns:repeat(3,1fr); gap:8px; width:90px; }
+.led { width:16px; height:22px; border-radius:3px; background:var(--lime); animation:ledPulse 1.4s ease-in-out infinite; box-shadow:0 0 8px var(--lime),0 0 20px rgba(200,244,0,.3); }
+.led:nth-child(3),.led:nth-child(5),.led:nth-child(8) { background:var(--red); box-shadow:0 0 8px var(--red),0 0 20px rgba(255,59,59,.3); }
+.led:nth-child(2){animation-delay:.15s} .led:nth-child(3){animation-delay:.3s}
+.led:nth-child(4){animation-delay:.45s} .led:nth-child(5){animation-delay:.6s}
+.led:nth-child(6){animation-delay:.75s} .led:nth-child(7){animation-delay:.9s}
+.led:nth-child(8){animation-delay:1.05s} .led:nth-child(9){animation-delay:1.2s}
+@keyframes ledPulse { 0%,100%{opacity:1;transform:scale(1)} 40%{opacity:.15;transform:scale(.9)} 60%{opacity:1;transform:scale(1.05)} }
+
+.intro-logo { position:relative; z-index:2; text-align:center; }
+.intro-logo img { height:38px; width:auto; margin:0 auto; }
+.intro-tagline { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.25em; color:var(--lime); text-transform:uppercase; margin-top:14px; }
+
+.scroll-hint { position:absolute; bottom:40px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:8px; z-index:2; opacity:0; transition:opacity .5s; }
+.scroll-hint span { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.2em; color:var(--muted); text-transform:uppercase; }
+.scroll-arrow { width:1px; height:40px; background:linear-gradient(to bottom,var(--lime),transparent); animation:scrollArrow 1.6s ease-in-out infinite; }
+@keyframes scrollArrow { 0%{opacity:0;transform:scaleY(0) translateY(-10px);transform-origin:top} 50%{opacity:1;transform:scaleY(1) translateY(0)} 100%{opacity:0;transform:scaleY(0) translateY(10px);transform-origin:bottom} }
+
+
+/* ════════════════════════════════════════
+   MAIN SITE
+════════════════════════════════════════ */
+#site { opacity:0; transition:opacity .6s ease .3s; }
+#site.visible { opacity:1; }
+
+
+/* ── NAV ── */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:50;
+  height:var(--nav-h);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 48px;
+  border-bottom:1px solid transparent;
+  transition:background .3s, border-color .3s;
+}
+nav.scrolled { background:rgba(6,6,6,.94); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-color:var(--border); }
+
+.nav-logo { display:flex; align-items:center; }
+.nav-logo img { height:22px; width:auto; }
+
+.nav-links { display:flex; align-items:center; gap:36px; list-style:none; }
+.nav-links a { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.15em;  color:var(--muted); transition:color .2s; }
+.nav-links a:hover, .nav-links a.active { color:var(--white); }
+.nav-cta { background:var(--lime)!important; color:var(--black)!important; padding:9px 18px; border-radius:2px; font-family: var(--display-font)!important; font-weight:700!important; font-size:13px!important; letter-spacing:-.005em!important; transition:background .2s!important; }
+.nav-cta:hover { background:#d4ff00!important; }
+
+.nav-hamburger { display:none; flex-direction:column; gap:5px; background:none; border:none; padding:6px; }
+.nav-hamburger span { display:block; width:24px; height:1.5px; background:var(--white); transition:transform .3s,opacity .3s; }
+.nav-hamburger.open span:nth-child(1){ transform:translateY(6.5px) rotate(45deg); }
+.nav-hamburger.open span:nth-child(2){ opacity:0; }
+.nav-hamburger.open span:nth-child(3){ transform:translateY(-6.5px) rotate(-45deg); }
+
+.mobile-menu { display:none; position:fixed; inset:0; top:var(--nav-h); z-index:49; background:rgba(6,6,6,.97); backdrop-filter:blur(12px); flex-direction:column; align-items:center; justify-content:center; gap:36px; opacity:0; pointer-events:none; transition:opacity .3s; }
+.mobile-menu.open { opacity:1; pointer-events:all; }
+.mobile-menu a { font-family: var(--display-font); font-weight:800; font-size:44px; letter-spacing:-.02em;  color:var(--muted); transition:color .2s; }
+.mobile-menu a:hover { color:var(--white); }
+.mobile-menu .m-cta { color:var(--lime)!important; }
+
+
+/* ── HERO ── */
+#hero { position:relative; height:100vh; min-height:700px; display:flex; align-items:flex-end; overflow:hidden; background:#050505; }
+
+/* Video background */
+.hero-v2-video {
+  position:absolute; inset:0; z-index:0;
+  width:100%; height:100%; object-fit:cover;
+  opacity:.22; will-change:transform;
+}
+
+/* Gradient scrim: left stays dark for text, top-to-bottom gradient for bottom content */
+.hero-v2-scrim {
+  position:absolute; inset:0; z-index:1;
+  background:
+    linear-gradient(to right, #050505 0%, rgba(5,5,5,.78) 45%, rgba(5,5,5,.18) 100%),
+    linear-gradient(to top, rgba(5,5,5,.96) 0%, rgba(5,5,5,.35) 40%, rgba(5,5,5,.05) 100%);
+}
+
+/* Fractal fog container */
+.hero-v2-fog {
+  pointer-events:none; position:absolute; inset:0; z-index:2;
+  overflow:hidden; user-select:none;
+}
+/* Desktop: SVG fog layers; hide CSS blobs */
+@media (min-width:769px) { .hero-v2-fog .vixon-fogblob { display:none; } }
+/* Mobile: CSS blobs only; hide SVG fog */
+@media (max-width:768px) { .hero-v2-fog .vixon-fog-a, .hero-v2-fog .vixon-fog-b { display:none; } }
+
+/* Subtle lime radial glow on the right (behind vest) */
+.hero-v2-glow-right {
+  pointer-events:none; position:absolute; right:0; top:50%; z-index:3;
+  transform:translateY(-50%);
+  height:80vh; width:60vw; border-radius:50%;
+  background:radial-gradient(closest-side, rgba(200,255,0,.08), transparent 70%);
+}
+
+/* Vest / lights container — right half, desktop only */
+.hero-v2-lights-wrap {
+  position:absolute; top:0; bottom:0; right:0; z-index:10;
+  width:50%; display:none; align-items:center; justify-content:center;
+}
+@media (min-width:1024px) { .hero-v2-lights-wrap { display:flex; } }
+.hero-v2-lights {
+  position:relative; width:100%; height:100%;
+  display:flex; align-items:center; justify-content:center;
+}
+.hero-light-img {
+  position:absolute; inset:0; margin:auto;
+  max-height:80vh; width:auto; object-fit:contain;
+  transition:opacity .7s ease-in-out;
+  pointer-events:none;
+}
+#hLightGreen, #hLightGlowNear, #hLightGlowWide { opacity:0; }
+.hero-light-glow-near { filter:blur(22px); mix-blend-mode:screen; }
+.hero-light-glow-wide { filter:blur(50px); mix-blend-mode:screen; }
+
+/* Fog keyframes (lively variant — more contrast & movement) */
+@keyframes vixon-fog-a-lively {
+  0%   { transform:translate(-22%,-10%) scale(1.5);  }
+  50%  { transform:translate(20%, 12%) scale(1.78); }
+  100% { transform:translate(-22%,-10%) scale(1.5);  }
+}
+@keyframes vixon-fog-b-lively {
+  0%   { transform:translate(20%, 12%) scale(1.72); }
+  50%  { transform:translate(-20%,-10%) scale(1.5);  }
+  100% { transform:translate(20%, 12%) scale(1.72); }
+}
+.vixon-fog-a, .vixon-fog-b {
+  position:absolute; inset:-65%;
+  mix-blend-mode:screen; will-change:transform;
+}
+.vixon-fog--lively .vixon-fog-a { opacity:.42; animation:vixon-fog-a-lively 26s ease-in-out infinite; }
+.vixon-fog--lively .vixon-fog-b { opacity:.30; animation:vixon-fog-b-lively 36s ease-in-out infinite; }
+
+/* CSS fog blobs — mobile fallback */
+.vixon-fogblob { position:absolute; border-radius:50%; filter:blur(40px); mix-blend-mode:screen; pointer-events:none; will-change:transform; }
+.vixon-fogblob-1 { left:-8%;  top:6%;  width:80%; height:36%; background:radial-gradient(closest-side,rgba(150,165,185,.5),transparent 72%); animation:vixon-fogblob-a 30s ease-in-out infinite; }
+.vixon-fogblob-2 { right:-12%; top:38%; width:90%; height:34%; background:radial-gradient(closest-side,rgba(130,145,165,.45),transparent 72%); animation:vixon-fogblob-b 40s ease-in-out infinite; }
+.vixon-fogblob-3 { left:-4%;  top:66%; width:78%; height:32%; background:radial-gradient(closest-side,rgba(140,155,175,.38),transparent 72%); animation:vixon-fogblob-a 36s ease-in-out infinite reverse; }
+@keyframes vixon-fogblob-a { 0%,100%{transform:translate(0,0) scale(1)}    50%{transform:translate(12%,7%) scale(1.18)}  }
+@keyframes vixon-fogblob-b { 0%,100%{transform:translate(0,0) scale(1.12)} 50%{transform:translate(-14%,-7%) scale(1)}  }
+
+/* Vest float & LED glow animations */
+@keyframes vixon-float {
+  0%,100% { transform:translateY(0) rotate(0deg); }
+  50%      { transform:translateY(-8px) rotate(.5deg); }
+}
+.vixon-float { animation:vixon-float 6s ease-in-out infinite; }
+
+@keyframes vixon-glow-pulse      { 0%,100%{opacity:.65} 50%{opacity:1} }
+@keyframes vixon-glow-pulse-wide { 0%,100%{opacity:.3;transform:scale(1)} 50%{opacity:.55;transform:scale(1.04)} }
+.vixon-glow-pulse      { animation:vixon-glow-pulse 3.2s ease-in-out infinite; }
+.vixon-glow-pulse-wide { animation:vixon-glow-pulse-wide 3.6s ease-in-out infinite; }
+
+@media (prefers-reduced-motion:reduce) {
+  .vixon-fog-a, .vixon-fog-b, .vixon-fogblob, .vixon-float,
+  .vixon-glow-pulse, .vixon-glow-pulse-wide { animation:none; }
+}
+
+.hero-live { position:absolute; top:calc(var(--nav-h) + 28px); right:48px; z-index:2; display:inline-flex; align-items:center; gap:8px; font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.18em; text-transform:uppercase; color:var(--lime); background:rgba(6,6,6,.5); border:1px solid rgba(200,244,0,.22); padding:7px 14px; border-radius:100px; opacity:0; transition:opacity .6s ease 1.9s; }
+#site.visible .hero-live { opacity:1; }
+.live-dot { width:5px; height:5px; background:var(--lime); border-radius:50%; animation:livePulse 1.5s ease-in-out infinite; }
+@keyframes livePulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(200,244,0,.4)} 50%{opacity:.6;box-shadow:0 0 0 4px rgba(200,244,0,0)} }
+
+.hero-content { position:relative; z-index:2; padding:0 48px 88px; max-width:760px; }
+
+.hero-eyebrow { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.2em; color:var(--lime); text-transform:uppercase; margin-bottom:24px; display:flex; align-items:center; gap:12px; opacity:0; transform:translateY(16px); transition:opacity .6s ease .6s,transform .6s ease .6s; }
+#site.visible .hero-eyebrow { opacity:1; transform:translateY(0); }
+.hero-eyebrow::before { content:''; display:block; width:32px; height:1px; background:var(--lime); }
+
+.hero-headline { font-family: var(--display-font); font-weight:800; font-size:clamp(52px,5.6vw,88px); line-height:.96; letter-spacing:-.035em; color:var(--white); margin-bottom:36px; max-width:none; text-wrap:balance; }
+.headline-word { display:block; overflow:hidden; padding-bottom:.08em; margin-bottom:-.08em; }
+.headline-word span { display:block; transform:translateY(110%); transition:transform .8s var(--ease); }
+.headline-word.lit span { color:var(--white); font-style: var(--em-style); font-family: var(--em-font); font-weight: var(--em-weight); letter-spacing:0; }
+#site.visible .headline-word:nth-child(1) span { transform:translateY(0); transition-delay:.50s; }
+#site.visible .headline-word:nth-child(2) span { transform:translateY(0); transition-delay:.63s; }
+#site.visible .headline-word:nth-child(3) span { transform:translateY(0); transition-delay:.76s; }
+#site.visible .headline-word:nth-child(4) span { transform:translateY(0); transition-delay:.89s; }
+
+.hero-sub { font-size:16px; font-weight:300; line-height:1.65; color:rgba(242,242,238,.62); max-width:480px; margin-bottom:44px; opacity:0; transform:translateY(16px); transition:opacity .7s ease 1.1s,transform .7s ease 1.1s; }
+#site.visible .hero-sub { opacity:1; transform:translateY(0); }
+
+.hero-actions { display:flex; align-items:center; gap:24px; opacity:0; transform:translateY(16px); transition:opacity .7s ease 1.25s,transform .7s ease 1.25s; }
+#site.visible .hero-actions { opacity:1; transform:translateY(0); }
+
+.btn-primary { display:inline-flex; align-items:center; gap:12px; background:var(--lime); color:var(--black); font-family: var(--display-font); font-size:15px; font-weight:700; letter-spacing:-.005em; padding:16px 28px; border-radius:2px; transition:background .2s,transform 150ms ease; }
+.btn-primary:hover { background:#d4ff00; transform:translateY(-1px); }
+.btn-primary svg { width:16px; height:16px; }
+
+.btn-ghost { display:inline-flex; align-items:center; gap:10px; color:var(--white); font-family: var(--display-font); font-size:15px; font-weight:600; letter-spacing:-.005em; transition:color .2s, opacity .2s; opacity:.78; }
+.btn-ghost:hover { color:var(--lime); opacity:1; }
+.btn-ghost::after { content:'→'; font-size:15px; transition:transform .2s; }
+.btn-ghost:hover::after { transform:translateX(4px); }
+
+.hero-pillars { position:absolute; right:48px; bottom:80px; z-index:2; display:flex; flex-direction:column; gap:2px; opacity:0; transform:translateY(16px); transition:opacity .7s ease 1.45s,transform .7s ease 1.45s; }
+#site.visible .hero-pillars { opacity:1; transform:translateY(0); }
+.hero-pillar { display:flex; align-items:center; gap:16px; padding:10px 16px; border-left:2px solid rgba(200,244,0,.14); transition:border-color .2s,background .2s; }
+.hero-pillar:hover { border-color:var(--lime); background:rgba(6,6,6,.35); }
+.pillar-num { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.15em; color:var(--lime); opacity:.6; }
+.pillar-name { font-family: var(--display-font); font-weight:700; font-size:16px; letter-spacing:.02em;  color:var(--white); line-height:1; }
+.pillar-desc { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.1em; color:var(--muted); text-transform:uppercase; margin-top:2px; }
+
+.hero-scroll { position:absolute; left:48px; bottom:0; z-index:2; display:flex; flex-direction:column; align-items:center; gap:12px; opacity:0; transition:opacity .5s ease 2s; }
+#site.visible .hero-scroll { opacity:1; }
+.hero-scroll-text { writing-mode:vertical-rl; font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.2em; color:var(--muted); text-transform:uppercase; }
+.hero-scroll-line { width:1px; height:80px; background:linear-gradient(to bottom,transparent,var(--lime)); }
+
+
+/* ── TICKER ── */
+.ticker-wrap { overflow:hidden; border-top:1px solid var(--border); border-bottom:1px solid var(--border); background:var(--offblack); padding:13px 0; }
+.ticker-track { display:flex; width:max-content; animation:ticker 38s linear infinite; }
+.ticker-track:hover { animation-play-state:paused; }
+.ticker-set { display:flex; align-items:center; gap:32px; padding-right:32px; }
+.ticker-set span { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); white-space:nowrap; }
+.ticker-set .t-sep { color:var(--lime); font-size:12px; opacity:.55; letter-spacing:0; }
+@keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+
+/* ════════════════════════════════════════
+   SECTION BASE
+════════════════════════════════════════ */
+section { padding:120px 48px; }
+
+.section-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.25em; color:var(--lime); text-transform:uppercase; margin-bottom:16px; display:flex; align-items:center; gap:10px; }
+.section-label::before { content:''; width:20px; height:1px; background:var(--lime); }
+
+.section-title { font-family: var(--display-font); font-weight:800; font-size:clamp(36px,4.6vw,66px); letter-spacing:-.035em; line-height:1.05; text-transform:uppercase; color:var(--white); margin-bottom:28px; max-width:18ch; text-wrap:balance; }
+.section-title em { font-style: var(--em-style); font-family: var(--em-font); font-weight: var(--em-weight); color:inherit; letter-spacing:-.005em; }
+.section-body { font-size:16px; font-weight:300; line-height:1.7; color:var(--muted); max-width:560px; }
+
+
+/* ════════════════════════════════════════
+   DECORATIVE RINGS
+════════════════════════════════════════ */
+.deco-rings {
+  position: absolute;
+  width: 2px; height: 2px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+/* Dark rings — light section backgrounds */
+.deco-rings-dark {
+  box-shadow:
+    0 0 0 52px  rgba(10,10,10,.038),
+    0 0 0 104px rgba(10,10,10,.030),
+    0 0 0 156px rgba(10,10,10,.022),
+    0 0 0 208px rgba(10,10,10,.015),
+    0 0 0 260px rgba(10,10,10,.009),
+    0 0 0 312px rgba(10,10,10,.005);
+}
+/* Light rings — dark section backgrounds */
+.deco-rings-light {
+  box-shadow:
+    0 0 0 52px  rgba(255,255,255,.038),
+    0 0 0 104px rgba(255,255,255,.030),
+    0 0 0 156px rgba(255,255,255,.022),
+    0 0 0 208px rgba(255,255,255,.015),
+    0 0 0 260px rgba(255,255,255,.009),
+    0 0 0 312px rgba(255,255,255,.005);
+}
+
+/* ════════════════════════════════════════
+   PRODUCT — FEATURE ROWS
+════════════════════════════════════════ */
+#product { background:#EDEDEA; border-top:none; padding: 120px 80px 0; position:relative; overflow:hidden; }
+.product-header { padding-bottom:72px; }
+
+.pf-rows { display:flex; flex-direction:column; }
+
+.pf-row {
+  display:grid;
+  grid-template-columns:55fr 45fr;
+  border-top:1px solid var(--border);
+  overflow:hidden;
+}
+.pf-row.reversed { grid-template-columns:45fr 55fr; }
+.pf-row.reversed .pf-image  { order:2; }
+.pf-row.reversed .pf-content { order:1; }
+
+/* image */
+.pf-image { position:relative; overflow:hidden; min-height:480px; }
+.pf-image img { width:100%; height:100%; object-fit:cover; filter:brightness(.62) saturate(.8); transition:filter .45s ease,transform .7s var(--ease); display:block; }
+.pf-row:hover .pf-image img { filter:brightness(.82) saturate(1); transform:scale(1.03); }
+
+.pf-image-tag { position:absolute; bottom:24px; left:24px; font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.18em; color:var(--lime); text-transform:uppercase; border-left:2px solid var(--lime); padding:5px 0 5px 8px; }
+
+/* content */
+.pf-content { background:#E8E8E4; padding:52px 48px; display:flex; flex-direction:column; justify-content:center; position:relative; overflow:hidden; }
+.pf-content::before { content:''; position:absolute; top:0; bottom:0; left:0; width:2px; background:rgba(10,10,10,.08); transition:background .3s; }
+.pf-row.reversed .pf-content::before { left:auto; right:0; }
+.pf-row:hover .pf-content::before { background:var(--lime); }
+
+.pf-watermark { position:absolute; top:-10px; right:20px; font-family: var(--display-font); font-weight:800; font-size:100px; color:rgba(10,10,10,.04); line-height:1; pointer-events:none; user-select:none; }
+
+.pf-tag { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.2em; color:rgba(10,10,10,.4); text-transform:uppercase; border:1px solid rgba(10,10,10,.12); display:inline-block; padding:4px 10px; margin-bottom:16px; }
+.pf-title { font-family: var(--display-font); font-weight:700; font-size:48px; letter-spacing:-.02em;  color:#0A0A0A; line-height:1; margin-bottom:14px; }
+.pf-desc { font-size:14px; font-weight:300; line-height:1.7; color:rgba(10,10,10,.52); max-width:380px; margin-bottom:32px; }
+
+/* feature list */
+.feat-list { list-style:none; display:flex; flex-direction:column; }
+.feat-item { padding:14px 0 14px 20px; border-bottom:1px solid rgba(10,10,10,.07); border-left:2px solid transparent; cursor:pointer; transition:border-left-color .25s; user-select:none; position:relative; }
+.feat-item:last-child { border-bottom:none; }
+.feat-item::before { content:''; position:absolute; left:6px; top:19px; width:4px; height:4px; border-radius:50%; background:#0A0A0A; opacity:.18; transition:opacity .2s; }
+.feat-item.open, .feat-item:hover { border-left-color:var(--lime); }
+.feat-item.open::before, .feat-item:hover::before { opacity:.55; }
+
+.feat-title { font-family: var(--display-font); font-weight:700; font-size:17px; letter-spacing:.02em;  color:rgba(10,10,10,.35); line-height:1; transition:color .2s; }
+.feat-item.open .feat-title, .feat-item:hover .feat-title { color:#0A0A0A; }
+
+.feat-body { font-size:13px; font-weight:300; line-height:1.65; color:rgba(10,10,10,.5); max-height:0; overflow:hidden; transition:max-height .35s ease,margin-top .25s; }
+.feat-item.open .feat-body { max-height:80px; margin-top:7px; }
+
+
+/* ── AI Lab strip ── */
+.ai-strip { background:var(--mid); border-top:1px solid var(--border); padding:64px 48px; position:relative; overflow:hidden; transition:background .3s; }
+.ai-strip:hover { background:#1e1e1e; }
+.ai-strip::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(to right,var(--lime),var(--red),var(--lime)); opacity:.4; }
+
+.ai-strip-inner { display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:start; }
+
+.ai-strip-left .pf-tag { margin-bottom:12px; }
+.ai-strip-title { font-family: var(--display-font); font-weight:700; font-size:44px; letter-spacing:-.02em;  color:var(--white); line-height:1; margin-bottom:14px; }
+.ai-strip-desc  { font-size:14px; font-weight:300; line-height:1.7; color:var(--muted); margin-bottom:28px; }
+
+/* sample report */
+.sample-report { border:1px solid var(--border); border-radius:2px; overflow:hidden; }
+.sr-header { background:rgba(200,244,0,.06); border-bottom:1px solid var(--border); padding:10px 16px; display:flex; align-items:center; gap:8px; }
+.sr-header-dot { width:6px; height:6px; background:var(--lime); border-radius:50%; animation:livePulse 1.5s ease-in-out infinite; }
+.sr-header-label { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.18em; color:var(--lime); text-transform:uppercase; }
+.sr-header-note  { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.12em; color:var(--muted); margin-left:auto; text-transform:uppercase; }
+.sr-metrics { display:grid; grid-template-columns:repeat(3,1fr); background:var(--dark); }
+.sr-metric { padding:20px; border-right:1px solid var(--border); }
+.sr-metric:last-child { border-right:none; }
+.sr-val { font-family: var(--display-font); font-weight:700; font-size:32px; color:var(--white); letter-spacing:-.02em; line-height:1; }
+.sr-unit { font-size:16px; color:var(--muted); }
+.sr-name { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.12em; color:var(--muted); text-transform:uppercase; margin-top:4px; display:block; }
+.sr-delta { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.1em; text-transform:uppercase; margin-top:4px; display:block; }
+.sr-delta.up { color:var(--lime); }
+.sr-footer { padding:10px 16px; border-top:1px solid var(--border); }
+.sr-footer-note { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.1em; color:var(--muted); text-transform:uppercase; opacity:.6; }
+
+
+/* ════════════════════════════════════════
+   MID-PAGE CTA BAND
+════════════════════════════════════════ */
+.cta-band {
+  background: #111111;
+  border-top: none;
+  border-bottom: none;
+  padding: 96px 80px;
+  position: relative;
+  overflow: hidden;
+  margin-top: 1px;
+}
+.cta-band::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--lime), transparent);
+  opacity: .45;
+}
+.cta-band::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,.07), transparent);
+}
+.cta-band-inner {
+  display: flex; align-items: center; justify-content: space-between; gap: 48px;
+  max-width: 1200px; margin: 0 auto;
+}
+.cta-band-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.2em; color:var(--lime); text-transform:uppercase; margin-bottom:12px; }
+.cta-band-headline { font-family: var(--display-font); font-weight:800; font-size:clamp(30px,4vw,52px); letter-spacing:-.035em; color:var(--white); line-height:1.05; max-width:22ch; text-wrap:balance; text-transform:uppercase; }
+.cta-band-headline em { font-style: var(--em-style); font-family: var(--em-font); font-weight: var(--em-weight); color:var(--lime); text-transform:none; letter-spacing:0; }
+.cta-band-sub { font-size:15px; font-weight:300; color:rgba(242,242,238,.55); margin-top:12px; max-width:40ch; }
+
+
+/* ════════════════════════════════════════
+   EXPERIENCE
+════════════════════════════════════════ */
+#experience { background:#F2F2EE; border-top:none; position:relative; overflow:hidden; }
+
+.experience-header { display:block; margin-bottom:64px; }
+
+.sports-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; }
+
+.sport-card { position:relative; overflow:hidden; cursor:pointer; aspect-ratio:4/3; }
+.sport-card:first-child { grid-column:span 2; aspect-ratio:16/6; }
+
+.sport-card img { width:100%; height:100%; object-fit:cover; filter:brightness(.44) saturate(.7); transition:filter .4s,transform .65s; }
+.sport-card:hover img { filter:brightness(.78) saturate(1.05); transform:scale(1.05); }
+
+.sport-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(6,6,6,.9) 0%,transparent 55%); display:flex; flex-direction:column; justify-content:flex-end; padding:24px; transition:background .3s; }
+.sport-card:hover .sport-overlay { background:linear-gradient(to top,rgba(6,6,6,.93) 0%,rgba(6,6,6,.18) 65%); }
+
+.sport-name { font-family: var(--display-font); font-weight:700; font-size:20px; letter-spacing:.02em; color:var(--white); line-height:1.1; transition:transform .32s var(--ease); }
+.sport-card:first-child .sport-name { font-size:30px; }
+
+/* Desc+subtext wrapped container — slides up on hover */
+.sport-extra { display:grid; grid-template-rows:0fr; transition:grid-template-rows .32s var(--ease), margin-top .32s var(--ease); margin-top:0; }
+.sport-extra > span { overflow:hidden; display:block; }
+.sport-card:hover .sport-extra { grid-template-rows:1fr; margin-top:10px; }
+
+.sport-desc { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.12em; color:var(--lime); text-transform:uppercase; margin-bottom:4px; }
+.sport-subtext { font-size:12px; font-weight:300; color:rgba(242,242,238,.6); line-height:1.5; }
+
+
+/* ════════════════════════════════════════
+   NEURO
+════════════════════════════════════════ */
+#neuro { background:#080808; border-top:1px solid rgba(255,255,255,.04); padding-bottom:0; }
+.neuro-header { padding-bottom:56px; }
+
+/* 2×2 grid */
+.neuro-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(255,255,255,.04); margin-bottom:1px; }
+.neuro-step { background:#0A0A0A; padding:52px 48px 52px; position:relative; overflow:hidden; border-top:2px solid transparent; transition:border-color .3s,background .3s; cursor:default; }
+.neuro-step.active { background:#0F0F0F; border-top-color:var(--lime); }
+
+.step-num { position:absolute; bottom:-10px; right:24px; font-family: var(--display-font); font-weight:800; font-size:96px; color:rgba(200,244,0,.05); line-height:1; letter-spacing:-.04em; pointer-events:none; transition:color .3s; }
+.neuro-step.active .step-num { color:rgba(200,244,0,.11); }
+
+.step-label { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.2em; color:rgba(200,244,0,.35); text-transform:uppercase; margin-bottom:16px; display:block; }
+.neuro-step.active .step-label { color:var(--lime); }
+
+.step-title { font-family: var(--display-font); font-weight:800; font-size:22px; letter-spacing:-.02em; color:rgba(240,240,236,.38); margin-bottom:16px; transition:color .3s; position:relative; z-index:1; line-height:1.1; }
+.neuro-step.active .step-title { color:#F0F0EC; }
+
+.step-desc { font-size:14px; font-weight:400; line-height:1.72; color:rgba(240,240,236,.32); position:relative; z-index:1; transition:color .3s; }
+.neuro-step.active .step-desc { color:rgba(240,240,236,.68); }
+
+.step-source { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.1em; color:rgba(200,244,0,.25); text-transform:uppercase; margin-top:16px; display:block; line-height:1.5; border-top:1px solid rgba(255,255,255,.04); padding-top:12px; position:relative; z-index:1; }
+.neuro-step.active .step-source { color:rgba(200,244,0,.45); }
+
+/* Stats row */
+.neuro-stats { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(255,255,255,.04); }
+.neuro-stat { background:#0D0D0D; padding:32px 40px; }
+.nstat-val { font-family: var(--display-font); font-weight:800; font-size:52px; letter-spacing:0; color:var(--lime); line-height:1; margin-bottom:6px; }
+.nstat-label { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.12em; color:rgba(240,240,236,.35); text-transform:uppercase; line-height:1.6; }
+
+
+/* ════════════════════════════════════════
+   WHO WE ARE
+════════════════════════════════════════ */
+#who { background:var(--black); border-top:1px solid var(--border); }
+
+.sorin-block { margin-top:64px; display:grid; grid-template-columns:1fr 1fr; min-height:460px; overflow:hidden; border:1px solid var(--border); }
+
+.sorin-image { position:relative; overflow:hidden; }
+.sorin-image img { width:100%; height:100%; min-height:460px; object-fit:cover; object-position:center top; filter:brightness(.62) grayscale(.1); transition:filter .4s,transform .7s var(--ease); }
+.sorin-block:hover .sorin-image img { filter:brightness(.78) grayscale(0); transform:scale(1.02); }
+
+.sorin-content { background:var(--mid); padding:56px; display:flex; flex-direction:column; justify-content:center; position:relative; }
+.sorin-content::before { content:''; position:absolute; top:0; left:0; bottom:0; width:2px; background:var(--lime); opacity:.5; }
+
+.sorin-tag  { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.2em; color:var(--lime); text-transform:uppercase; margin-bottom:20px; }
+.sorin-quote { font-family: var(--display-font); font-weight:700; font-size:clamp(24px,2.6vw,32px); letter-spacing:-.025em; line-height:1.18; color:var(--white); margin-bottom:28px; text-wrap:pretty; }
+.sorin-quote em { font-style: var(--em-style); font-family: var(--em-font); font-weight: var(--em-weight); color:inherit; }
+.sorin-name { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.15em; color:var(--lime); text-transform:uppercase; }
+.sorin-role { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.1em; color:var(--muted); text-transform:uppercase; margin-top:4px; }
+
+.who-cards { display:grid; grid-template-columns:1fr 1fr; gap:2px; margin-top:2px; }
+.who-card { background:var(--dark); padding:44px; }
+
+.clubs-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.2em; color:var(--muted); text-transform:uppercase; margin-bottom:20px; }
+.clubs-list { display:flex; flex-direction:column; }
+.club-item { display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid var(--border); }
+.club-item:last-child { border-bottom:none; }
+.club-dot  { width:6px; height:6px; background:var(--lime); border-radius:50%; flex-shrink:0; }
+.club-name { font-size:14px; font-weight:500; color:var(--white); }
+.club-loc  { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; margin-top:2px; }
+
+.coach-quote { font-family: var(--display-font); font-weight:700; font-size:24px; color:var(--white); letter-spacing:-.025em; line-height:1.2; margin-bottom:16px; text-wrap:pretty; }
+.coach-quote em { font-style: var(--em-style); font-family: var(--em-font); font-weight: var(--em-weight); color:inherit; }
+.coach-attr { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.15em; color:var(--muted); text-transform:uppercase; }
+
+
+/* ════════════════════════════════════════
+   DEMO / FORM
+════════════════════════════════════════ */
+#demo { background:#EFEFEB; border-top:none; padding:120px 48px; }
+
+.demo-inner { display:grid; grid-template-columns:1fr 1fr; gap:72px; align-items:start; }
+
+.demo-headline { font-family: var(--display-font); font-weight:800; font-size:clamp(44px,5.6vw,80px); letter-spacing:-.035em; line-height:.96; text-transform:uppercase; color:var(--white); margin-bottom:22px; max-width:14ch; text-wrap:balance; }
+.demo-headline em { font-style: var(--em-style); font-family: var(--em-font); font-weight: var(--em-weight); color:inherit; }
+.demo-sub { font-size:15px; font-weight:300; line-height:1.7; color:var(--muted); margin-bottom:28px; }
+
+.demo-availability { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.15em; color:rgba(200,244,0,.6); text-transform:uppercase; margin-bottom:24px; padding:10px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+
+.demo-trust { display:flex; align-items:center; gap:10px; margin-top:10px; }
+.trust-dot  { width:5px; height:5px; background:var(--lime); border-radius:50%; flex-shrink:0; }
+.trust-text { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.15em; color:var(--muted); text-transform:uppercase; }
+
+/* "what happens next" */
+.demo-next { margin-top:36px; }
+.demo-next-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.2em; color:var(--muted); text-transform:uppercase; margin-bottom:14px; }
+.next-step { display:flex; align-items:flex-start; gap:14px; padding:12px 0; border-bottom:1px solid var(--border); }
+.next-step:last-child { border-bottom:none; }
+.ns-num { font-family: var(--display-font); font-weight:700; font-size:20px; color:var(--lime); opacity:.5; line-height:1; flex-shrink:0; }
+.ns-text { font-size:13px; font-weight:300; color:rgba(242,242,238,.6); line-height:1.55; padding-top:2px; }
+
+/* form */
+.demo-form { display:flex; flex-direction:column; gap:14px; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-group { display:flex; flex-direction:column; gap:7px; }
+.form-group label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.15em; color:var(--muted); text-transform:uppercase; }
+
+.form-group input,
+.form-group select { background:var(--dark); border:1px solid var(--border); border-radius:2px; color:var(--white); font-family:'Inter',sans-serif; font-size:14px; font-weight:300; padding:12px 16px; outline:none; width:100%; -webkit-appearance:none; transition:border-color .2s,box-shadow .2s; }
+.form-group input:focus,
+.form-group select:focus { border-color:var(--lime); box-shadow:0 0 0 2px rgba(200,244,0,.07); }
+.form-group input::placeholder { color:rgba(242,242,238,.18); }
+.form-group select option { background:var(--dark); }
+
+.form-submit { display:flex; align-items:center; justify-content:space-between; gap:16px; background:var(--lime); color:var(--black); border:none; border-radius:2px; font-family: var(--display-font); font-size:15px; font-weight:700; letter-spacing:-.005em;  padding:18px 28px; margin-top:8px; transition:background .2s,transform 150ms ease; }
+.form-submit:hover { background:#d4ff00; transform:translateY(-1px); }
+.form-submit svg { width:16px; height:16px; flex-shrink:0; }
+
+.form-success { display:none; text-align:center; padding:48px 32px; border:1px solid rgba(200,244,0,.16); border-radius:2px; }
+.form-success.show { display:block; }
+.success-check { font-size:28px; color:var(--lime); margin-bottom:16px; }
+.success-title { font-family: var(--display-font); font-weight:700; font-size:32px; letter-spacing:-.02em;  color:var(--lime); margin-bottom:10px; }
+.success-text  { font-size:14px; font-weight:300; color:var(--muted); line-height:1.65; }
+
+
+/* ════════════════════════════════════════
+   FOOTER
+════════════════════════════════════════ */
+footer { background:var(--black); border-top:1px solid var(--border); padding:36px 48px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:24px; }
+.footer-logo { display:flex; align-items:center; }
+.footer-logo img { height:18px; width:auto; opacity:.6; transition:opacity .2s; }
+.footer-logo:hover img { opacity:1; }
+.footer-copy { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.1em; color:var(--muted); text-transform:uppercase; }
+.footer-links { display:flex; gap:24px; list-style:none; }
+.footer-links a { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.12em; color:var(--muted); text-transform:uppercase; transition:color .2s; }
+.footer-links a:hover { color:var(--lime); }
+
+
+/* ── Hero variant toggle (demo) ── */
+.hero-ghost-text {
+  pointer-events:none; position:absolute; inset:0; z-index:5;
+  overflow:hidden; user-select:none;
+  -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 58%);
+  mask-image: linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 58%);
+  display: none;
+}
+.ghost-word {
+  position:absolute; left:-4px; white-space:nowrap;
+  font-family: var(--display-font); font-weight:900;
+  line-height:.85; letter-spacing:-.04em;
+  color:rgba(255,255,255,.07); mix-blend-mode:screen;
+}
+.ghost-brain  { top: 6vh;  font-size:18vw; }
+.ghost-faster { top:34vh;  font-size:18vw; }
+.ghost-body   { top:62vh;  font-size:20vw; }
+
+/* Fog variant: ocultar video, mostrar ghost text */
+body[data-hero-variant="fog"] .hero-v2-video  { display:none; }
+body[data-hero-variant="fog"] .hero-ghost-text { display:block; }
+
+/* Switch pill */
+.hero-variant-switch {
+  position:absolute; bottom:28px; left:50%; transform:translateX(-50%);
+  z-index:20; display:inline-flex; align-items:center; gap:0;
+  background:rgba(6,6,6,.6); border:1px solid rgba(255,255,255,.12);
+  border-radius:100px; overflow:hidden;
+  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+}
+.hvs-btn {
+  font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.18em;
+  text-transform:uppercase; color:rgba(255,255,255,.4);
+  background:none; border:none; padding:8px 16px; cursor:pointer;
+  transition:color .2s, background .2s;
+}
+.hvs-btn.active { background:rgba(200,244,0,.15); color:var(--lime); }
+.hvs-sep { width:1px; height:14px; background:rgba(255,255,255,.12); flex-shrink:0; }
+
+/* ── Lang toggle ── */
+.lang-switch { display:flex; align-items:center; gap:0; padding-left:16px; border-left:1px solid rgba(255,255,255,.1); margin-left:4px; }
+.lang-btn { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); background:none; border:none; padding:4px 7px; cursor:pointer; transition:color .2s; }
+.lang-btn:hover { color:var(--white); }
+.lang-btn.active { color:var(--lime); }
+.lang-sep { font-family:'DM Mono',monospace; font-size:8px; color:rgba(255,255,255,.15); pointer-events:none; }
+.mobile-lang { display:flex; align-items:center; gap:8px; }
+.mobile-lang .lang-btn { font-size:20px; letter-spacing:.15em; color:rgba(242,242,238,.35); padding:8px 14px; }
+.mobile-lang .lang-btn.active { color:var(--lime); }
+.mobile-lang .lang-sep { font-size:14px; color:rgba(242,242,238,.18); }
+
+
+/* ════════════════════════════════════════
+   SCROLL REVEAL
+════════════════════════════════════════ */
+.fade-up { opacity:0; transform:translateY(36px); transition:opacity .7s ease,transform .7s ease; }
+.fade-up.visible { opacity:1; transform:translateY(0); }
+.fade-up.d1 { transition-delay:.1s; }
+.fade-up.d2 { transition-delay:.22s; }
+.fade-up.d3 { transition-delay:.36s; }
+
+
+/* ════════════════════════════════════════
+   PRODUCT CARDS v2 — side by side with character
+════════════════════════════════════════ */
+.pc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.pc-card {
+  position: relative;
+  background: #F4F4F0;
+  border: 1px solid rgba(10,10,10,.07);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: border-color .35s, transform .45s var(--ease);
+}
+.pc-card:hover { border-color: rgba(10,10,10,.16); }
+
+/* === Visual area shared === */
+.pc-visual {
+  position: relative;
+  height: 520px;
+  background: #0A0A0B;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(10,10,10,.07);
+  isolation: isolate;
+}
+
+/* Subtle 32px technical grid */
+.pc-tech-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: -1px -1px;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, #000 30%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, #000 30%, transparent 100%);
+}
+
+/* Corner ticks */
+.pc-tick {
+  position: absolute;
+  width: 12px; height: 12px;
+  pointer-events: none;
+  opacity: .55;
+}
+.pc-tick.tl { top: 18px; left: 18px; border-top: 1px solid var(--lime); border-left: 1px solid var(--lime); }
+.pc-tick.tr { top: 18px; right: 18px; border-top: 1px solid var(--lime); border-right: 1px solid var(--lime); }
+.pc-tick.bl { bottom: 18px; left: 18px; border-bottom: 1px solid var(--lime); border-left: 1px solid var(--lime); }
+.pc-tick.br { bottom: 18px; right: 18px; border-bottom: 1px solid var(--lime); border-right: 1px solid var(--lime); }
+
+/* Tech meta tags */
+.pc-meta-tag {
+  position: absolute;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .14em;
+  color: rgba(255,255,255,.42);
+  text-transform: uppercase;
+  display: inline-flex; align-items: center; gap: 6px;
+  white-space: nowrap;
+  z-index: 3;
+}
+.pc-meta-tag .k { color: rgba(255,255,255,.32); }
+.pc-meta-tag .v { color: rgba(200,244,0,.85); }
+.pc-meta-tag.mt-tl { top: 28px; left: 38px; }
+.pc-meta-tag.mt-tr { top: 28px; right: 38px; }
+.pc-meta-tag.mt-bl { bottom: 28px; left: 38px; }
+.pc-meta-tag.mt-br { bottom: 28px; right: 38px; }
+
+/* === TOP card: technical render === */
+.tv-top { background: #0A0A0B; }
+.tv-top::before {
+  /* radial soft lime glow behind vest */
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 360px; height: 360px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at center, rgba(200,244,0,.09), transparent 65%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* === TOP card: full-bleed photo variant === */
+.tv-fullbleed { background: #0A0A0B; }
+.tv-fullbleed::before { display: none; }
+.tv-fullimg {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: var(--top-obj-pos, center 18%);
+  transform: scale(var(--top-scale, 1.06));
+  transition: transform 1.2s var(--ease), filter .4s;
+  filter: contrast(1.06) saturate(1.06) brightness(.96);
+  z-index: 1;
+}
+.pc-card:hover .tv-fullimg { transform: scale(calc(var(--top-scale, 1.06) + .02)); }
+.tv-fullimg-grain {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(10,10,11,0) 60%, rgba(10,10,11,.55) 100%);
+}
+
+.tv-figure {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -52%);
+  width: 240px;
+  height: 320px;
+  z-index: 2;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 30px 60px -20px rgba(0,0,0,.7);
+}
+.tv-figure img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center 32%;
+  filter: brightness(.95) contrast(1.12) saturate(1.05);
+  transition: transform .8s var(--ease);
+}
+.pc-card:hover .tv-figure img { transform: scale(1.04); }
+
+.tv-figure::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10,10,11,0) 60%, rgba(10,10,11,.45) 100%);
+  pointer-events: none;
+}
+
+/* crosshair frame around figure */
+.tv-frame {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -52%);
+  width: 280px;
+  height: 360px;
+  pointer-events: none;
+  z-index: 3;
+}
+.tv-frame::before, .tv-frame::after {
+  content: '';
+  position: absolute;
+  background: rgba(200,244,0,.35);
+}
+.tv-frame::before { top: 50%; left: -20px; width: 14px; height: 1px; box-shadow: calc(100% + 26px) 0 0 rgba(200,244,0,.35); }
+.tv-frame::after  { left: 50%; top: -20px; height: 14px; width: 1px; box-shadow: 0 calc(100% + 26px) 0 rgba(200,244,0,.35); }
+
+/* Callouts */
+.tv-callout {
+  position: absolute;
+  z-index: 4;
+  display: flex; align-items: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.85);
+}
+.tv-callout .co-num { color: var(--lime); margin-right: 8px; opacity: .8; }
+.tv-callout .co-label { white-space: nowrap; }
+.tv-callout .co-line {
+  height: 1px;
+  background-image: linear-gradient(to right, rgba(200,244,0,.55) 50%, transparent 0%);
+  background-size: 5px 1px;
+  background-repeat: repeat-x;
+}
+.tv-callout .co-dot {
+  width: 7px; height: 7px;
+  border: 1px solid var(--lime);
+  border-radius: 50%;
+  background: rgba(200,244,0,.18);
+  box-shadow: 0 0 0 3px rgba(200,244,0,.06);
+  flex-shrink: 0;
+}
+
+/* Left callouts (label outside, line going right to vest) */
+.tv-callout.co-A, .tv-callout.co-C { left: 38px; }
+.tv-callout.co-A .co-line, .tv-callout.co-C .co-line { width: 56px; margin: 0 8px; }
+.tv-callout.co-A { top: 28%; }
+.tv-callout.co-C { bottom: 28%; }
+
+/* Right callouts (label outside, line going left) */
+.tv-callout.co-B, .tv-callout.co-D { right: 38px; flex-direction: row-reverse; }
+.tv-callout.co-B .co-line, .tv-callout.co-D .co-line { width: 56px; margin: 0 8px; }
+.tv-callout.co-B { top: 34%; }
+.tv-callout.co-D { bottom: 22%; }
+
+/* === APP card: photo + UI fragments === */
+.tv-app {
+  background-color: #0A0A0B;
+  background-size: cover;
+  background-position: center;
+}
+.tv-app-overlay {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(135deg, rgba(10,10,11,.35) 0%, rgba(10,10,11,.10) 45%, rgba(10,10,11,.65) 100%);
+  z-index: 1;
+}
+.tv-app-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 90% 70% at 30% 70%, transparent 0%, rgba(10,10,11,.5) 100%);
+}
+
+/* LIVE pill */
+.tv-live {
+  position: absolute;
+  top: 28px; right: 38px;
+  z-index: 5;
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(10,10,11,.65);
+  border: 1px solid rgba(200,244,0,.28);
+  padding: 6px 12px;
+  border-radius: 100px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .18em;
+  color: var(--lime);
+  text-transform: uppercase;
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.tv-live-dot {
+  width: 5px; height: 5px;
+  background: var(--lime);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--lime);
+  animation: livePulse 1.5s ease-in-out infinite;
+}
+
+/* App fragments */
+.ui-frag {
+  position: absolute;
+  z-index: 4;
+  background: rgba(13,13,14,.88);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 10px;
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  box-shadow: 0 20px 50px -10px rgba(0,0,0,.55), 0 0 0 1px rgba(0,0,0,.2);
+}
+
+/* Chip "Match mode" */
+.ui-chip {
+  position: absolute;
+  z-index: 4;
+  top: 30%;
+  left: 7%;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 14px 7px 12px;
+  background: rgba(13,13,14,.88);
+  border: 1px solid rgba(200,244,0,.45);
+  border-radius: 100px;
+  font-family: var(--display-font);
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 10px 30px -8px rgba(0,0,0,.5);
+}
+.ui-chip::before {
+  content: '';
+  width: 7px; height: 7px;
+  background: var(--lime);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--lime);
+}
+.ui-chip .chip-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: rgba(255,255,255,.4);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  margin-left: 4px;
+  padding-left: 8px;
+  border-left: 1px solid rgba(255,255,255,.12);
+}
+
+/* Player card */
+.ui-player {
+  top: 18%;
+  right: 7%;
+  width: 240px;
+  padding: 14px 14px;
+  display: flex; align-items: center; gap: 12px;
+}
+.upc-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF6B3B, #C92A2A);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(255,255,255,.18);
+}
+.upc-meta { flex: 1; min-width: 0; }
+.upc-name { font-family: var(--display-font); font-weight: 600; font-size: 13px; color: #fff; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.upc-stat { display: flex; align-items: baseline; gap: 5px; margin-top: 3px; white-space: nowrap; }
+.upc-stat-val { font-family: var(--display-font); font-weight: 700; font-size: 15px; color: var(--lime); letter-spacing: -.02em; }
+.upc-stat-unit { font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(255,255,255,.55); }
+.upc-stat-key { font-family: 'DM Mono', monospace; font-size: 8.5px; color: rgba(255,255,255,.42); text-transform: uppercase; letter-spacing: .12em; margin-left: 4px; }
+.upc-led {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--lime);
+  box-shadow: 0 0 8px var(--lime);
+  align-self: flex-start;
+  margin-top: 4px;
+  animation: livePulse 2.4s ease-in-out infinite;
+}
+
+/* Chart card */
+.ui-chart {
+  bottom: 12%;
+  left: 7%;
+  width: 250px;
+  padding: 14px 16px;
+}
+.ucc-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; white-space: nowrap; }
+.ucc-key { font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: .12em; }
+.ucc-val { font-family: var(--display-font); font-weight: 700; font-size: 18px; color: var(--lime); letter-spacing: -.02em; line-height: 1; }
+.ucc-graph { width: 100%; height: 44px; display: block; margin-top: 6px; }
+.ucc-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.06); font-family: 'DM Mono', monospace; font-size: 8.5px; color: rgba(255,255,255,.4); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+.ucc-foot .ucc-trend { color: var(--lime); }
+
+/* ════════════════════════════════════════
+   App fragments — variants
+════════════════════════════════════════ */
+/* Hide non-active variants only */
+body[data-app-variant="live"]    .tv-app .fv-match,
+body[data-app-variant="live"]    .tv-app .fv-session,
+body[data-app-variant="match"]   .tv-app .fv-live,
+body[data-app-variant="match"]   .tv-app .fv-session,
+body[data-app-variant="session"] .tv-app .fv-live,
+body[data-app-variant="session"] .tv-app .fv-match { display: none !important; }
+
+/* Groups (match variant) */
+.ui-groups {
+  top: 18%; left: 7%; right: 7%;
+  display: flex;
+  padding: 16px 18px;
+  flex-direction: column;
+  gap: 12px;
+}
+.ug-head { display: flex; align-items: center; justify-content: space-between; white-space: nowrap; }
+.ug-title { font-family: var(--display-font); font-weight: 700; font-size: 13px; color: #fff; letter-spacing: -.01em; white-space: nowrap; }
+.ug-count { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--lime); letter-spacing: .14em; text-transform: uppercase; padding: 3px 8px; border: 1px solid rgba(200,244,0,.35); border-radius: 100px; background: rgba(200,244,0,.06); white-space: nowrap; }
+.ug-teams { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; }
+.ug-team { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; border-radius: 6px; }
+.ug-team.ug-green { background: rgba(50,205,93,.14); border: 1px solid rgba(50,205,93,.32); }
+.ug-team.ug-blue  { background: rgba(39,128,255,.14); border: 1px solid rgba(39,128,255,.32); }
+.ug-team-name { font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(255,255,255,.6); text-transform: uppercase; letter-spacing: .14em; }
+.ug-team-avatars { display: flex; gap: -4px; }
+.ug-av {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  margin-right: -6px;
+  border: 1.5px solid rgba(13,13,14,.95);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.ug-vs { font-family: var(--display-font); font-weight: 800; font-size: 11px; color: rgba(255,255,255,.4); letter-spacing: .15em; }
+
+.ui-mini-player {
+  bottom: 14%; left: 7%;
+  display: flex;
+  padding: 10px 12px;
+  display: flex; align-items: center; gap: 10px;
+  min-width: 200px;
+}
+.ump-avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg,#FF6B3B,#C92A2A); color: #fff; font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1.5px solid rgba(255,255,255,.18); }
+.ump-info { flex: 1; min-width: 0; }
+.ump-name { font-family: var(--display-font); font-weight: 600; font-size: 12px; color: #fff; letter-spacing: -.005em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ump-role { font-family: 'DM Mono', monospace; font-size: 8.5px; color: rgba(255,255,255,.4); letter-spacing: .1em; text-transform: uppercase; margin-top: 2px; white-space: nowrap; }
+.ump-led { width: 8px; height: 8px; background: var(--lime); border-radius: 50%; box-shadow: 0 0 6px var(--lime); flex-shrink: 0; }
+
+/* Tabs (session variant) */
+.ui-tabs {
+  top: 30%; left: 7%;
+  padding: 4px;
+  background: rgba(13,13,14,.88);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 100px;
+  display: inline-flex;
+  gap: 2px;
+}
+.ui-tab {
+  background: transparent;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-family: var(--display-font);
+  font-weight: 600;
+  font-size: 11.5px;
+  color: rgba(255,255,255,.55);
+  cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  white-space: nowrap;
+}
+.ui-tab.active { background: rgba(200,244,0,.14); color: var(--lime); border: 1px solid rgba(200,244,0,.45); padding: 5px 13px; }
+.ut-dot { width: 5px; height: 5px; background: var(--lime); border-radius: 50%; box-shadow: 0 0 6px var(--lime); }
+
+.ui-summary {
+  top: 18%; right: 7%;
+  flex-direction: column;
+  display: flex;
+  padding: 12px 14px;
+  width: 240px;
+  gap: 10px;
+}
+.us-head { display: flex; align-items: center; justify-content: space-between; }
+.us-key { font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(255,255,255,.55); letter-spacing: .14em; text-transform: uppercase; }
+.us-time { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--lime); letter-spacing: .08em; }
+.us-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 4px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.06); }
+.us-stat { display: flex; flex-direction: column; gap: 2px; }
+.us-val { font-family: var(--display-font); font-weight: 700; font-size: 16px; color: #fff; letter-spacing: -.02em; line-height: 1; }
+.us-lbl { font-family: 'DM Mono', monospace; font-size: 8.5px; color: rgba(255,255,255,.4); letter-spacing: .12em; text-transform: uppercase; }
+
+.ui-playerlist {
+  bottom: 12%; left: 7%;
+  flex-direction: column;
+  display: flex;
+  padding: 12px 14px;
+  width: 260px;
+  gap: 4px;
+}
+.upl-head { font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(255,255,255,.45); letter-spacing: .14em; text-transform: uppercase; margin-bottom: 4px; }
+.upl-row { display: grid; grid-template-columns: 20px 1fr auto; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.05); }
+.upl-row:last-child { border-bottom: none; }
+.upl-rank { font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(255,255,255,.4); }
+.upl-name { font-family: var(--display-font); font-weight: 500; font-size: 12px; color: #fff; letter-spacing: -.005em; }
+.upl-val { font-family: 'DM Mono', monospace; font-size: 10px; color: rgba(255,255,255,.55); }
+.upl-val b { color: var(--lime); font-weight: 500; }
+
+/* === Card body === */
+.pc-body {
+  padding: 38px 40px 40px;
+  position: relative;
+  background: #F4F4F0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.pc-watermark {
+  position: absolute;
+  top: 22px;
+  right: 28px;
+  font-family: var(--display-font);
+  font-weight: 900;
+  font-size: 96px;
+  color: rgba(10,10,10,.05);
+  line-height: 1;
+  letter-spacing: -.05em;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+.pc-meta {
+  display: inline-flex; align-items: center; gap: 10px;
+  margin-bottom: 22px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .18em;
+  color: rgba(10,10,10,.5);
+  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
+}
+.pc-meta::before {
+  content: '';
+  display: inline-block;
+  width: 8px; height: 8px;
+  border: 1.5px solid var(--lime);
+  background: rgba(200,244,0,.18);
+}
+.pc-meta .pc-meta-dot { color: rgba(10,10,10,.25); font-weight: 500; }
+
+.pc-title {
+  font-family: var(--display-font);
+  font-weight: 800;
+  font-size: clamp(24px,2.2vw,32px);
+  letter-spacing: -.02em;
+  line-height: 1.1;
+  color: #0A0A0A;
+  margin-bottom: 16px;
+  max-width: 360px;
+  min-height: 3.3em;
+  text-wrap: balance;
+  position: relative;
+  z-index: 1;
+}
+.pc-title em {
+  font-style: var(--em-style);
+  font-family: var(--em-font);
+  font-weight: var(--em-weight);
+  color: rgba(10,10,10,.6);
+  letter-spacing: -.005em;
+}
+.pc-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.65;
+  color: rgba(10,10,10,.55);
+  max-width: 420px;
+  margin-bottom: 28px;
+  position: relative;
+  z-index: 1;
+}
+
+.pc-features {
+  list-style: none;
+  display: flex; flex-direction: column;
+  border-top: 1px solid rgba(10,10,10,.09);
+  margin-top: auto;
+  position: relative;
+  z-index: 1;
+}
+.pc-feat {
+  display: block;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(10,10,10,.09);
+  border-left: 2px solid transparent;
+  padding-left: 12px;
+  cursor: default;
+  position: relative;
+  transition: border-left-color .25s;
+}
+.pc-feat-row {
+  display: flex; align-items: center; gap: 16px;
+  position: relative;
+}
+.pc-feat:last-child { border-bottom: none; }
+.pc-feat:hover { border-left-color: var(--lime); }
+.pc-feat:hover .pc-flabel { color: #000; }
+.pc-fnum {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .14em;
+  color: rgba(10,10,10,.32);
+  flex-shrink: 0;
+  min-width: 18px;
+}
+.pc-flabel {
+  font-family: var(--display-font);
+  font-weight: 500;
+  font-size: 14.5px;
+  color: rgba(10,10,10,.72);
+  letter-spacing: -.005em;
+  transition: color .2s;
+  flex: 1;
+}
+/* desc: siempre visible, grid-rows trick para smooth reveal si se quiere ocultar */
+.pc-feat-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 12.5px;
+  font-weight: 300;
+  line-height: 1.55;
+  color: rgba(10,10,10,.45);
+  padding-left: 34px;
+  padding-right: 12px;
+  /* smooth reveal con CSS grid */
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .32s var(--ease), margin-top .32s var(--ease);
+  margin-top: 0;
+}
+.pc-feat-desc > span { overflow: hidden; display: block; }
+.pc-feat:hover .pc-feat-desc {
+  grid-template-rows: 1fr;
+  margin-top: 8px;
+}
+.pc-feat:hover .pc-feat-desc > span { color: rgba(10,10,10,.62); }
+
+
+/* ════════════════════════════════════════
+   LIGHT SECTIONS — token overrides
+════════════════════════════════════════ */
+
+/* Section labels on light backgrounds */
+#product .section-label,
+#experience .section-label,
+#demo    .section-label { color: rgba(10,10,10,.42); }
+
+#product .section-label::before,
+#experience .section-label::before,
+#demo    .section-label::before { background: rgba(10,10,10,.25); }
+
+#product .section-title,
+#experience .section-title { color: #0A0A0A; }
+
+#product .section-title em,
+#experience .section-title em { color: #0A0A0A; }
+
+#product .section-body,
+#experience .section-body { color: rgba(10,10,10,.52); }
+
+/* Product feature rows on light bg */
+#product .pf-row  { border-top-color: rgba(10,10,10,.07); }
+
+/* Experience sport cards on light bg */
+#experience .sport-card img { filter:brightness(.52) saturate(.75); transition:filter .45s ease,transform .7s var(--ease); }
+#experience .sport-card:hover img { filter:brightness(.82) saturate(1); transform:scale(1.05); }
+#experience .sport-overlay { background:linear-gradient(to top,rgba(6,6,6,.88) 0%,transparent 55%); }
+#experience .sport-card:hover .sport-overlay { background:linear-gradient(to top,rgba(6,6,6,.93) 0%,rgba(6,6,6,.18) 65%); }
+#experience .sport-name { color:#F0F0EC; font-size:24px; }
+#experience .sport-card:first-child .sport-name { font-size:32px; }
+#experience .sport-desc { color:var(--lime); }
+
+/* Demo section */
+#demo .demo-headline { color: #111111; }
+#demo .demo-headline em { color: #111111; }
+#demo .demo-sub { color: rgba(17,17,17,.68); }
+#demo .demo-availability { color: rgba(17,17,17,.58); border-color: rgba(17,17,17,.14); }
+#demo .trust-dot { background: rgba(17,17,17,.55); }
+#demo .trust-text { color: rgba(17,17,17,.78); }
+#demo .demo-next-label { color: rgba(17,17,17,.58); }
+#demo .next-step { border-bottom-color: rgba(17,17,17,.1); }
+#demo .ns-num { color: rgba(17,17,17,.22); opacity: 1; }
+#demo .ns-text  { color: rgba(17,17,17,.72); }
+#demo .form-group label { color: rgba(17,17,17,.48); }
+#demo .form-group input,
+#demo .form-group select {
+  background: #ffffff;
+  border-color: rgba(17,17,17,.14);
+  color: #111111;
+}
+#demo .form-group input::placeholder { color: rgba(17,17,17,.20); }
+#demo .form-group input:focus,
+#demo .form-group select:focus { border-color: var(--lime); box-shadow: 0 0 0 2px rgba(200,244,0,.12); }
+#demo .form-group select option { background: #ffffff; color: #111111; }
+#demo .form-success { border-color: rgba(200,244,0,.28); }
+#demo .success-title { color: var(--dark); }
+#demo .success-text  { color: rgba(17,17,17,.55); }
+
+
+/* ════════════════════════════════════════
+   TESTIMONIALS
+════════════════════════════════════════ */
+#testimonials { background: #0A0A0A; border-top: 1px solid rgba(255,255,255,.04); }
+
+.t-carousel { margin-top: 64px; position: relative; }
+
+/* Slide — two-column card */
+.t-slide { display: none; }
+.t-slide.active {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  min-height: 420px;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 28px;
+}
+
+/* Photo panel */
+.t-photo { position: relative; overflow: hidden; background: #0D0D0D; }
+.t-photo img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  filter: brightness(.55) grayscale(.2);
+  transition: transform .8s var(--ease), filter .5s ease;
+  display: block;
+}
+.t-slide:hover .t-photo img { transform: scale(1.04); filter: brightness(.68) grayscale(0); }
+.t-photo::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(to right, rgba(10,10,10,0) 55%, rgba(10,10,10,.75) 100%),
+              linear-gradient(to top, rgba(10,10,10,.6) 0%, transparent 40%);
+  pointer-events: none;
+}
+/* Placeholder tag shown when no real photo */
+.t-photo-label {
+  position: absolute;
+  bottom: 20px; left: 20px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .16em;
+  color: rgba(255,255,255,.35);
+  text-transform: uppercase;
+  border: 1px solid rgba(255,255,255,.1);
+  padding: 4px 8px;
+  border-radius: 2px;
+  z-index: 2;
+}
+
+/* Body panel */
+.t-body {
+  padding: 52px 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  background: #0D0D0D;
+}
+.t-body::before {
+  content: '"';
+  position: absolute;
+  top: 16px; right: 32px;
+  font-family: var(--display-font);
+  font-weight: 800;
+  font-size: 180px;
+  color: rgba(200,244,0,.04);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.t-quote {
+  font-family: var(--display-font);
+  font-weight: 700;
+  font-size: clamp(20px,2.2vw,28px);
+  letter-spacing: -.025em;
+  line-height: 1.28;
+  color: #F0F0EC;
+  margin-bottom: 36px;
+  text-wrap: pretty;
+  position: relative; z-index: 1;
+}
+.t-quote em { font-style: var(--em-style); font-family: var(--em-font); font-weight: var(--em-weight); color:inherit; }
+
+.t-author { display: flex; align-items: center; gap: 14px; position: relative; z-index: 1; }
+
+.tcard-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: #1A1A1A;
+  border: 1px solid rgba(200,244,0,.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .06em;
+  color: var(--lime);
+  flex-shrink: 0;
+}
+
+.tcard-name { font-size: 14px; font-weight: 600; color: #F0F0EC; }
+.tcard-role {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .12em;
+  color: rgba(240,240,236,.38);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.t-dots { display: flex; align-items: center; gap: 8px; padding-top: 4px; }
+.t-dot {
+  width: 48px; height: 2px;
+  background: rgba(255,255,255,.1);
+  border: none; cursor: pointer; padding: 0;
+  position: relative; overflow: hidden; border-radius: 1px;
+}
+.t-dot::after {
+  content: '';
+  position: absolute; top: 0; left: 0;
+  height: 100%; width: 0;
+  background: var(--lime);
+  border-radius: 1px;
+}
+/* Slide activo: barra animada */
+.t-dot.active::after {
+  animation: tProgress var(--slide-duration, 5s) linear forwards;
+}
+/* Slides ya vistos: barra llena instantánea */
+.t-dot.done::after {
+  width: 100%;
+  animation: none;
+}
+@keyframes tProgress { from { width: 0% } to { width: 100% } }
+
+@media (max-width: 900px) {
+  .t-slide.active { grid-template-columns: 1fr; }
+  .t-photo { height: 240px; }
+  .t-photo::after { background: linear-gradient(to top, rgba(10,10,10,.8) 0%, transparent 50%); }
+  .t-body { padding: 36px 28px; }
+  .t-body::before { font-size: 120px; }
+}
+
+
+
+/* Decoration intensity modes */
+body[data-decor="off"] .pc-tick,
+body[data-decor="off"] .pc-meta-tag,
+body[data-decor="off"] .tv-frame,
+body[data-decor="off"] .tv-callout,
+body[data-decor="off"] .pc-watermark,
+body[data-decor="off"] .ui-frag,
+body[data-decor="off"] .ui-chip,
+body[data-decor="off"] .tv-live,
+body[data-decor="off"] .pc-tech-grid { display: none !important; }
+
+body[data-decor="subtle"] .pc-watermark,
+body[data-decor="subtle"] .pc-meta-tag.mt-bl,
+body[data-decor="subtle"] .pc-meta-tag.mt-br,
+body[data-decor="subtle"] .tv-frame,
+body[data-decor="subtle"] .pc-tech-grid { display: none !important; }
+body[data-decor="subtle"] .tv-callout.co-B,
+body[data-decor="subtle"] .tv-callout.co-D { display: none !important; }
+
+
+
+@media (max-width: 900px) {
+  :root { --nav-h:56px; }
+  nav { padding:0 24px; }
+  .nav-links { display:none; }
+  .nav-hamburger { display:flex; }
+  .mobile-menu { display:flex; }
+  section { padding:72px 24px; }
+  #product { padding:72px 24px 0; }
+
+  .hero-content { padding:0 24px 64px; max-width:100%; }
+  .hero-headline { font-size:clamp(52px,13vw,72px); }
+  .hero-pillars  { display:none; }
+  .hero-live     { top:calc(var(--nav-h) + 14px); right:24px; }
+  .hero-scroll   { left:24px; }
+
+  .pf-row, .pf-row.reversed { grid-template-columns:1fr; }
+  .pf-row .pf-image, .pf-row.reversed .pf-image { order:-1; }
+  .pf-row.reversed .pf-content { order:1; }
+  .pf-content { padding:36px 24px; }
+  .pf-content::before { top:0; bottom:auto; left:0; right:0; width:auto; height:2px; transform:scaleX(0); transform-origin:left; }
+  .pf-row.reversed .pf-content::before { left:0; right:auto; }
+  .pf-row:hover .pf-content::before { transform:scaleX(1); }
+  .pf-image { min-height:260px; }
+  .pf-title { font-size:40px; }
+
+  .ai-strip-inner { grid-template-columns:1fr; gap:36px; }
+  .ai-strip { padding:52px 24px; }
+  .sr-metrics { grid-template-columns:1fr 1fr; }
+  .sr-metric:last-child { grid-column:span 2; border-top:1px solid var(--border); border-right:none; }
+
+  .cta-band { padding:44px 24px; }
+  .cta-band-inner { flex-direction:column; align-items:flex-start; gap:24px; }
+
+  .experience-header { grid-template-columns:1fr; }
+  .sports-grid { grid-template-columns:repeat(2,1fr); }
+  .sport-card:first-child { grid-column:span 2; aspect-ratio:16/8; }
+
+  .neuro-grid { grid-template-columns:1fr; }
+  .neuro-stats { grid-template-columns:1fr; }
+
+  .sorin-block { grid-template-columns:1fr; }
+  .sorin-image { order:-1; }
+  .sorin-image img { min-height:260px; }
+  .sorin-content { padding:36px 24px; }
+  .who-cards { grid-template-columns:1fr; }
+  .who-card { padding:32px 24px; }
+
+  .product-cards { grid-template-columns:1fr; }
+  .pc-grid { grid-template-columns:1fr; gap:16px; }
+  .pc-visual { height:380px; }
+  .pc-body { padding:28px 24px 32px; }
+  .pc-watermark { font-size:72px; }
+  .pc-meta-tag.mt-tl, .pc-meta-tag.mt-tr, .pc-meta-tag.mt-bl, .pc-meta-tag.mt-br { display:none; }
+  .pc-meta-tag.mt-tl, .pc-meta-tag.mt-tr { display:inline-flex; left:24px; right:auto; top:20px; }
+  .pc-meta-tag.mt-tr { left:auto; right:24px; }
+  .tv-figure { width:180px; height:240px; }
+  .tv-frame { width:220px; height:280px; }
+  .tv-callout .co-line { width:30px; }
+  .ui-player { width:200px; right:5%; top:14%; }
+  .ui-chart { width:200px; left:5%; bottom:10%; }
+  .ui-chip { top:38%; left:5%; }
+  .tv-live { top:20px; right:24px; }
+
+  .t-quote { max-width:100%; }
+
+  .demo-inner { grid-template-columns:1fr; gap:48px; }
+  #demo { padding:72px 24px; }
+  .form-row { grid-template-columns:1fr; }
+
+  footer { flex-direction:column; align-items:flex-start; padding:28px 24px; }
+}
+
+@media (min-width: 901px) and (max-width: 1100px) {
+  section { padding:100px 40px; }
+  #product { padding:100px 56px 0; }
+  .pf-content { padding:44px 40px; }
+  .ai-strip { padding:56px 40px; }
+  #demo { padding:100px 40px; }
+  .cta-band { padding:48px 40px; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════
+     VIDEO INTRO
+════════════════════════════════════ -->
+<div id="video-intro">
+  <div class="led-scene">
+    <div class="field-silhouette"></div>
+    <div class="player-shape">
+      <div class="led-grid">
+        <div class="led"></div><div class="led"></div><div class="led"></div>
+        <div class="led"></div><div class="led"></div><div class="led"></div>
+        <div class="led"></div><div class="led"></div><div class="led"></div>
+      </div>
+    </div>
+  </div>
+  <div class="intro-logo">
+    <img src="logo/logoWhite.svg" alt="Vixon">
+    <p class="intro-tagline">Cognitive Training System</p>
+  </div>
+  <div class="scroll-hint" id="scrollHint">
+    <span>Scroll to explore</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════
+     MAIN SITE
+════════════════════════════════════ -->
+<div id="site">
+
+  <!-- NAV -->
+  <nav id="navbar">
+    <a href="#" class="nav-logo"><img src="logo/logoWhite.svg" alt="Vixon"></a>
+    <ul class="nav-links">
+      <li><a href="#product"    data-section="product">Producto</a></li>
+      <li><a href="#experience" data-section="experience">Experiencia</a></li>
+      <li><a href="#neuro"      data-section="neuro">Neuro</a></li>
+      <li><a href="#testimonials" data-section="testimonials">Testimonios</a></li>
+      <li><a href="#demo" class="nav-cta">Quiero una demo</a></li>
+      <li class="lang-switch">
+        <button class="lang-btn active" data-lang="es" aria-label="Español">ES</button>
+        <span class="lang-sep">/</span>
+        <button class="lang-btn" data-lang="en" aria-label="English">EN</button>
+      </li>
+    </ul>
+    <button class="nav-hamburger" id="navHamburger" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#product"    class="m-link">Producto</a>
+    <a href="#experience" class="m-link">Experiencia</a>
+    <a href="#neuro"      class="m-link">Neuro</a>
+    <a href="#testimonials" class="m-link">Testimonios</a>
+    <a href="#demo"       class="m-link m-cta">Quiero una demo</a>
+    <div class="mobile-lang">
+      <button class="lang-btn active" data-lang="es" aria-label="Español">ES</button>
+      <span class="lang-sep">/</span>
+      <button class="lang-btn" data-lang="en" aria-label="English">EN</button>
+    </div>
+  </div>
+
+
+  <!-- ══════ HERO ══════ -->
+  <section id="hero">
+
+    <!-- Background video — jugadores entrenando con el chaleco -->
+    <video id="heroBg" class="hero-v2-video" src="hero-v2-bg.mp4"
+      autoplay muted loop playsinline preload="auto" aria-hidden></video>
+
+    <!-- Gradient scrim over video -->
+    <div aria-hidden class="hero-v2-scrim"></div>
+
+    <!-- Fractal fog (lively variant) -->
+    <div aria-hidden class="hero-v2-fog vixon-fog--lively">
+      <!-- Desktop: SVG fractal noise layers -->
+      <svg class="vixon-fog-a" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <filter id="vixon-mist-a" x="-100%" y="-100%" width="300%" height="300%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.005 0.007" numOctaves="3" seed="7" stitchTiles="stitch"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 0.62 0 0 0 0 0.70 0 0 0 0 0.78 0 0 0 2.6 -1.0"/>
+        </filter>
+        <rect width="100%" height="100%" filter="url(#vixon-mist-a)"/>
+      </svg>
+      <svg class="vixon-fog-b" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <filter id="vixon-mist-b" x="-100%" y="-100%" width="300%" height="300%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.004 0.006" numOctaves="3" seed="3" stitchTiles="stitch"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 0.62 0 0 0 0 0.70 0 0 0 0 0.78 0 0 0 2.6 -1.0"/>
+        </filter>
+        <rect width="100%" height="100%" filter="url(#vixon-mist-b)"/>
+      </svg>
+      <!-- Mobile: CSS gradient blobs -->
+      <span class="vixon-fogblob vixon-fogblob-1"></span>
+      <span class="vixon-fogblob vixon-fogblob-2"></span>
+      <span class="vixon-fogblob vixon-fogblob-3"></span>
+    </div>
+
+    <!-- Subtle lime glow behind the vest -->
+    <div aria-hidden class="hero-v2-glow-right"></div>
+
+    <!-- Ghost text — fog variant only -->
+    <div aria-hidden class="hero-ghost-text">
+      <div class="ghost-word ghost-brain">BRAIN</div>
+      <div class="ghost-word ghost-faster">FASTER</div>
+      <div class="ghost-word ghost-body">BODY</div>
+    </div>
+
+    <!-- Chaleco con LEDs — desktop derecha -->
+    <div class="hero-v2-lights-wrap">
+      <div class="hero-v2-lights vixon-float" id="heroLights">
+        <img src="lights/off.png"   id="hLightOff"       class="hero-light-img" aria-hidden alt="">
+        <img src="lights/green.png" id="hLightGreen"     class="hero-light-img" alt="Chaleco Vixon con LEDs encendidos">
+        <img src="lights/green.png" id="hLightGlowNear"  class="hero-light-img hero-light-glow-near" aria-hidden alt="">
+        <img src="lights/green.png" id="hLightGlowWide"  class="hero-light-img hero-light-glow-wide" aria-hidden alt="">
+      </div>
+    </div>
+
+    <!-- Live badge -->
+    <div class="hero-live"><span class="live-dot"></span><span class="hero-live-text">Entrenamiento en vivo</span></div>
+
+    <!-- Contenido principal -->
+    <div class="hero-content">
+      <div class="hero-eyebrow">01 — Cognitive Training System</div>
+      <h1 class="hero-headline">
+        <span class="headline-word"><span style="font-weight:900;font-family:'Inter',sans-serif;color:var(--lime)">CEREBRO MÁS RÁPIDO</span></span>
+        <span class="headline-word"><span style="font-weight:900;font-family:'Inter',sans-serif">CUERPO MÁS RÁPIDO</span></span>
+      </h1>
+      <p class="hero-sub">
+        Vixon combina un chaleco inteligente con una app de entrenamiento para desarrollar la velocidad de reacción, la atención y la toma de decisiones de los deportistas — en movimiento real, con datos reales.
+      </p>
+      <div class="hero-actions">
+        <a href="#demo" class="btn-primary">
+          <span class="btn-text">Pedí una demo</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#product" class="btn-ghost">Ver cómo funciona</a>
+      </div>
+    </div>
+
+    <!-- Product pillars (bottom right) -->
+    <div class="hero-pillars">
+      <div class="hero-pillar">
+        <div class="pillar-num">01</div>
+        <div><div class="pillar-name">The Vest</div><div class="pillar-desc">El chaleco inteligente</div></div>
+      </div>
+      <div class="hero-pillar">
+        <div class="pillar-num">02</div>
+        <div><div class="pillar-name">The App</div><div class="pillar-desc">Control y datos en tiempo real</div></div>
+      </div>
+      <div class="hero-pillar">
+        <div class="pillar-num">03</div>
+        <div><div class="pillar-name">Neuro</div><div class="pillar-desc">Ciencia detrás del rendimiento</div></div>
+      </div>
+    </div>
+
+    <div class="hero-scroll">
+      <div class="hero-scroll-text">Scroll</div>
+      <div class="hero-scroll-line"></div>
+    </div>
+
+    <!-- Hero variant switch — demo only -->
+    <div class="hero-variant-switch" role="group" aria-label="Hero variant">
+      <button class="hvs-btn active" data-variant="video">Video</button>
+      <span class="hvs-sep" aria-hidden="true"></span>
+      <button class="hvs-btn" data-variant="fog">Niebla</button>
+    </div>
+
+  </section>
+
+
+  <!-- ══════ TICKER ══════ -->
+  <div class="ticker-wrap" aria-hidden="true">
+    <div class="ticker-track">
+      <div class="ticker-set">
+        <span>Cognitive Training</span><span class="t-sep">·</span>
+        <span>Reaction Speed</span><span class="t-sep">·</span>
+        <span>Decision Making</span><span class="t-sep">·</span>
+        <span>AI Lab</span><span class="t-sep">·</span>
+        <span>Wearable Tech</span><span class="t-sep">·</span>
+        <span>Real Movement</span><span class="t-sep">·</span>
+        <span>Faster Brain</span><span class="t-sep">·</span>
+        <span>Faster Body</span><span class="t-sep">·</span>
+      </div>
+      <div class="ticker-set" aria-hidden="true">
+        <span>Cognitive Training</span><span class="t-sep">·</span>
+        <span>Reaction Speed</span><span class="t-sep">·</span>
+        <span>Decision Making</span><span class="t-sep">·</span>
+        <span>AI Lab</span><span class="t-sep">·</span>
+        <span>Wearable Tech</span><span class="t-sep">·</span>
+        <span>Real Movement</span><span class="t-sep">·</span>
+        <span>Faster Brain</span><span class="t-sep">·</span>
+        <span>Faster Body</span><span class="t-sep">·</span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════ PRODUCT ══════ -->
+  <section id="product" style="padding: 90px 80px 80px">
+
+    <!-- Decorative rings -->
+    <div class="deco-rings deco-rings-dark" style="top:-60px; right:22%;" aria-hidden="true"></div>
+    <div class="deco-rings deco-rings-dark" style="top:340px; right:-80px;" aria-hidden="true"></div>
+
+    <div class="product-header fade-up">
+      <div class="section-label">01 — El Sistema</div>
+      <h2 class="section-title">Dos piezas<br><em>Un sistema</em></h2>
+      <p class="section-body">
+        Un chaleco con LEDs, una app con IA y un motor de datos cognitivos. Tres piezas que trabajan juntas para que cada sesión de entrenamiento deje datos reales sobre cómo piensa y reacciona cada jugador.
+      </p>
+    </div>
+
+    <div class="pc-grid">
+
+      <!-- ───── The Vest ───── -->
+      <article class="pc-card fade-up">
+        <div class="pc-visual tv-top tv-fullbleed">
+          <img class="tv-fullimg" id="topFullImg" src="vixon_destacadas/vixon1.png" alt="Chaleco Vixon con LEDs activos" style="object-fit: cover">
+          <div class="tv-fullimg-grain"></div>
+        </div>
+
+        <div class="pc-body">
+          <div class="pc-watermark">01</div>
+          <div class="pc-meta">Hardware<span class="pc-meta-dot">/</span>The Vest</div>
+          <h3 class="pc-title">El chaleco que entrena <em>en movimiento.</em></h3>
+          <p class="pc-desc">Paneles de LEDs RGB que se encienden mientras los jugadores corren. Reciben estímulos visuales en tiempo real y tienen que reaccionar en fracciones de segundo.</p>
+
+          <ul class="pc-features">
+            <li class="pc-feat" data-comment-anchor="95300ccc3c-li">
+              <div class="pc-feat-row">
+                <span class="pc-fnum">01</span><span class="pc-flabel">LEDs RGB programables</span>
+              </div>
+              <div class="pc-feat-desc"><span>El entrenador configura colores y secuencias desde la app. Cada jugador puede recibir estímulos distintos en simultáneo.</span></div>
+            </li>
+            <li class="pc-feat">
+              <div class="pc-feat-row">
+                <span class="pc-fnum">02</span><span class="pc-flabel">Sincronización inalámbrica</span>
+              </div>
+              <div class="pc-feat-desc"><span>Se conecta en segundos. Sin cables, sin configuración técnica entre ejercicios.</span></div>
+            </li>
+            <li class="pc-feat">
+              <div class="pc-feat-row">
+                <span class="pc-fnum">03</span><span class="pc-flabel">Diseñado para el campo</span>
+              </div>
+              <div class="pc-feat-desc"><span>Liviano y resistente. No interfiere con el movimiento natural del jugador.</span></div>
+            </li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- ───── The App ───── -->
+      <article class="pc-card fade-up d1">
+        <div class="pc-visual tv-app" id="tvApp" style="background-image:url('images/5.jpg');">
+          <div class="tv-app-overlay"></div>
+
+          <div class="pc-tick tl"></div>
+          <div class="pc-tick tr"></div>
+          <div class="pc-tick bl"></div>
+          <div class="pc-tick br"></div>
+
+          <div class="pc-meta-tag mt-tl"><span class="k">SESSION</span><span class="v">#2042</span></div>
+          <div class="pc-meta-tag mt-bl">↳ App control / Live feed</div>
+          <div class="pc-meta-tag mt-br">12 players · online</div>
+
+          <div class="tv-live">
+            <span class="tv-live-dot"></span>
+            <span class="tv-live-text">Live · 00:12:34</span>
+          </div>
+
+          <div class="ui-chip fv-live">
+            <span>Match mode</span>
+            <span class="chip-sub">3v3</span>
+          </div>
+
+          <div class="ui-frag ui-player fv-live">
+            <div class="upc-avatar">JD</div>
+            <div class="upc-meta">
+              <div class="upc-name">João D.</div>
+              <div class="upc-stat">
+                <span class="upc-stat-val">238</span><span class="upc-stat-unit">ms</span>
+                <span class="upc-stat-key">reaction</span>
+              </div>
+            </div>
+            <div class="upc-led"></div>
+          </div>
+
+          <div class="ui-frag ui-chart fv-live">
+            <div class="ucc-head">
+              <span class="ucc-key">Decision accuracy</span>
+              <span class="ucc-val">+31%</span>
+            </div>
+            <svg class="ucc-graph" viewBox="0 0 220 44" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="currentColor" stop-opacity=".25"/>
+                  <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <polyline points="0,42 28,40 56,34 84,30 112,24 140,16 168,12 196,8 220,4 220,44 0,44" fill="url(#chartFill)" stroke="none" style="color:var(--lime)"/>
+              <polyline points="0,42 28,40 56,34 84,30 112,24 140,16 168,12 196,8 220,4" fill="none" stroke="var(--lime)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <polyline points="0,42 28,40 56,38 84,36 112,33 140,31 168,29 196,28 220,27" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="1" stroke-dasharray="2 3" stroke-linecap="round"/>
+            </svg>
+            <div class="ucc-foot">
+              <span>Last 4 weeks</span>
+              <span class="ucc-trend">▲ trending up</span>
+            </div>
+          </div>
+
+          <!-- ── Variant: MATCH (match mode setup) ── -->
+          <div class="ui-frag ui-groups fv-match">
+            <div class="ug-head">
+              <span class="ug-title">Match mode</span>
+              <span class="ug-count">3 v 3</span>
+            </div>
+            <div class="ug-teams">
+              <div class="ug-team ug-green">
+                <div class="ug-team-name">Group A</div>
+                <div class="ug-team-avatars">
+                  <span class="ug-av" style="background:#FF6B3B">JD</span>
+                  <span class="ug-av" style="background:#3BA0FF">MC</span>
+                  <span class="ug-av" style="background:#A855F7">RS</span>
+                </div>
+              </div>
+              <div class="ug-vs">VS</div>
+              <div class="ug-team ug-blue">
+                <div class="ug-team-name">Group B</div>
+                <div class="ug-team-avatars">
+                  <span class="ug-av" style="background:#F59E0B">PT</span>
+                  <span class="ug-av" style="background:#10B981">LM</span>
+                  <span class="ug-av" style="background:#EF4444">DN</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ui-frag ui-mini-player fv-match">
+            <div class="ump-avatar">JD</div>
+            <div class="ump-info">
+              <div class="ump-name">João Diogo</div>
+              <div class="ump-role">Group A · Striker</div>
+            </div>
+            <div class="ump-led"></div>
+          </div>
+
+          <!-- ── Variant: SESSION (mode selector + summary) ── -->
+          <div class="ui-frag ui-tabs fv-session">
+            <button class="ui-tab active"><span class="ut-dot"></span>Match</button>
+            <button class="ui-tab">Warmup</button>
+            <button class="ui-tab">Freeplay</button>
+          </div>
+
+          <div class="ui-frag ui-summary fv-session">
+            <div class="us-head">
+              <span class="us-key">Session #2042</span>
+              <span class="us-time">00:12:34</span>
+            </div>
+            <div class="us-row">
+              <div class="us-stat">
+                <div class="us-val">12</div>
+                <div class="us-lbl">Players</div>
+              </div>
+              <div class="us-stat">
+                <div class="us-val">8</div>
+                <div class="us-lbl">Drills</div>
+              </div>
+              <div class="us-stat">
+                <div class="us-val"><span style="color:var(--lime)">▲</span> 24%</div>
+                <div class="us-lbl">Accuracy</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ui-frag ui-playerlist fv-session">
+            <div class="upl-head">Top reactors</div>
+            <div class="upl-row">
+              <span class="upl-rank">01</span>
+              <span class="upl-name">João D.</span>
+              <span class="upl-val"><b>238</b> ms</span>
+            </div>
+            <div class="upl-row">
+              <span class="upl-rank">02</span>
+              <span class="upl-name">Mateo C.</span>
+              <span class="upl-val"><b>262</b> ms</span>
+            </div>
+            <div class="upl-row">
+              <span class="upl-rank">03</span>
+              <span class="upl-name">Rafa S.</span>
+              <span class="upl-val"><b>284</b> ms</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pc-body">
+          <div class="pc-watermark">02</div>
+          <div class="pc-meta">Software<span class="pc-meta-dot">/</span>The App</div>
+          <h3 class="pc-title">El control que <em>no deja de aprender.</em></h3>
+          <p class="pc-desc">Diseñá la sesión, controlá los estímulos en vivo y dejá que NeuroEngine™ — el motor de IA de Vixon — procese los datos cognitivos de cada jugador. La app no solo registra lo que pasó: aprende de cada sesión.</p>
+
+          <ul class="pc-features">
+            <li class="pc-feat">
+              <div class="pc-feat-row">
+                <span class="pc-fnum">01</span><span class="pc-flabel">5 modos de entrenamiento</span>
+              </div>
+              <div class="pc-feat-desc"><span>Match mode, Double agents, Unbalanced teams, Warmup, Freeplay. Cada uno con su propia mecánica.</span></div>
+            </li>
+            <li class="pc-feat">
+              <div class="pc-feat-row">
+                <span class="pc-fnum">02</span><span class="pc-flabel">Control en vivo</span>
+              </div>
+              <div class="pc-feat-desc"><span>Modificá los estímulos mientras el ejercicio está corriendo. Ajustá la dificultad según lo que ves en el campo.</span></div>
+            </li>
+            <li class="pc-feat">
+              <div class="pc-feat-row">
+                <span class="pc-fnum">03</span><span class="pc-flabel">Análisis NeuroEngine™</span>
+              </div>
+              <div class="pc-feat-desc"><span>Al finalizar cada sesión, NeuroEngine™ genera un informe cognitivo por jugador: tiempo de reacción, consistencia bajo fatiga y evolución semana a semana.</span></div>
+            </li>
+          </ul>
+        </div>
+      </article>
+
+    </div>
+
+
+  </section>
+
+
+  <!-- ══════ NEURO ══════ -->
+  <section id="neuro" style="border-width: 0px">
+
+    <div class="neuro-header fade-up">
+      <div class="section-label">02 — Neuro</div>
+      <h2 class="section-title">Por qué<br><em>funciona</em></h2>
+      <p class="section-body">El Método Vixon combina neurociencia aplicada, hardware de estímulo y NeuroEngine™ — nuestro motor de IA — para construir un sistema que entrena, mide y aprende. No es un gadget: es un protocolo cognitivo respaldado por ciencia y potenciado por datos reales de cada sesión.</p>
+    </div>
+
+    <div class="neuro-grid" id="neuroSteps">
+      <div class="neuro-step fade-up">
+        <div class="step-num">01</div>
+        <span class="step-label">Percepción visual</span>
+        <div class="step-title">Estímulo visual</div>
+        <p class="step-desc">El cerebro tarda entre 150 y 300 ms en procesar un estímulo visual y generar una respuesta motora. Ese circuito se puede entrenar — y cuanto más entrenado está, más rápida y precisa es la reacción en el partido.</p>
+        <span class="step-source">Journal of Sports Sciences · 2019<br>Visual reaction time in competitive sport</span>
+      </div>
+      <div class="neuro-step fade-up d1">
+        <div class="step-num">02</div>
+        <span class="step-label">Cognición bajo presión</span>
+        <div class="step-title">Decisión bajo presión</div>
+        <p class="step-desc">Los atletas de élite no reaccionan más rápido por tener mejores reflejos físicos. Su ventaja está en que leen la situación antes, con menos información y en menos tiempo. Eso no es talento innato: es entrenamiento.</p>
+        <span class="step-source">Frontiers in Psychology · 2022<br>Anticipatory cognition in elite athletes</span>
+      </div>
+      <div class="neuro-step fade-up d2">
+        <div class="step-num">03</div>
+        <span class="step-label">Transferencia cognitiva</span>
+        <div class="step-title">Ejecución en movimiento</div>
+        <p class="step-desc">El entrenamiento cognitivo es más efectivo cuando ocurre en contexto de movimiento real. El cerebro aprende mejor cuando el estímulo y la respuesta suceden en el mismo ambiente donde se compite.</p>
+        <span class="step-source">Int. Journal of Sports Physiology · 2020<br>Specificity of cognitive-motor training</span>
+      </div>
+      <div class="neuro-step fade-up d3">
+        <div class="step-num">04</div>
+        <span class="step-label">NeuroEngine™</span>
+        <div class="step-title">Datos que mejoran el método</div>
+        <p class="step-desc">NeuroEngine™ analiza los datos cognitivos de cada sesión y construye un modelo de rendimiento individual para cada atleta. Cuantos más datos, mejor calibrado queda el protocolo — y más rápido mejora el jugador. Equipos que aplican el Método Vixon 4 semanas reportan +23% en velocidad de reacción y +31% en precisión de decisión.</p>
+        <span class="step-source">Journal of Sports Science &amp; Medicine · 2021<br>Cognitive training outcomes in team sports</span>
+      </div>
+    </div>
+
+    <div class="neuro-stats">
+      <div class="neuro-stat fade-up">
+        <div class="nstat-val">+23%</div>
+        <div class="nstat-label">Velocidad de reacción<br>Journal of Sports Science &amp; Medicine, 2021</div>
+      </div>
+      <div class="neuro-stat fade-up d1">
+        <div class="nstat-val">+31%</div>
+        <div class="nstat-label">Precisión de decisión bajo presión<br>Frontiers in Psychology, 2022</div>
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- ══════ CTA INTERMEDIO ══════ -->
+  <div class="cta-band fade-up">
+    <div class="cta-band-inner">
+      <div>
+        <p class="cta-band-label">¿Listo para verlo?</p>
+        <h3 class="cta-band-headline">Ya entendiste cómo funciona.<br><em>El siguiente paso es verlo en vivo.</em></h3>
+        <p class="cta-band-sub">Una demo de Vixon dura 45 minutos. Te vas con la cabeza cambiada sobre cómo puede ser el entrenamiento.</p>
+      </div>
+      <a href="#demo" class="btn-primary">
+        <span class="btn-text">Quiero una demo</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+
+
+  <!-- ══════ EXPERIENCE ══════ -->
+  <section id="experience">
+
+    <!-- Decorative rings -->
+    <div class="deco-rings deco-rings-dark" style="top:-80px; right:30%;" aria-hidden="true"></div>
+    <div class="deco-rings deco-rings-dark" style="bottom:200px; right:-100px;" aria-hidden="true"></div>
+
+    <div class="experience-header fade-up">
+      <div class="section-label">03 — Experiencia</div>
+      <h2 class="section-title">Para todo deporte<br>que vive de la<br><em>decisión rápida</em></h2>
+      <p class="section-body">
+        Donde haya que leer el juego, anticiparse y reaccionar en milisegundos, Vixon tiene algo que aportar. El sistema se adapta a las exigencias de cada deporte, posición y ejercicio.
+      </p>
+    </div>
+
+    <div class="sports-grid">
+      <div class="sport-card fade-up">
+        <img src="vixon_destacadas/vixon_soccer_v1.png" alt="Entrenamiento de fútbol con chalecos Vixon">
+        <div class="sport-overlay">
+          <div class="sport-name">Fútbol</div>
+          <div class="sport-extra"><span>
+            <div class="sport-desc">Decisión en velocidad</div>
+            <div class="sport-subtext">La ventana de 3 segundos antes de una presión, un cambio de frente o un contraataque.</div>
+          </span></div>
+        </div>
+      </div>
+      <div class="sport-card fade-up d1">
+        <img src="vixon_destacadas/vixon_futsal.png" alt="Entrenamiento de futsal con Vixon">
+        <div class="sport-overlay">
+          <div class="sport-name">Futsal</div>
+          <div class="sport-extra"><span>
+            <div class="sport-desc">Reacción en espacios reducidos</div>
+            <div class="sport-subtext">Velocidad de decisión en contextos de alta presión y poco espacio disponible.</div>
+          </span></div>
+        </div>
+      </div>
+      <div class="sport-card fade-up d2">
+        <img src="vixon_destacadas/vixon_academy.png" alt="Academia juvenil con chaleco Vixon">
+        <div class="sport-overlay">
+          <div class="sport-name">Academia juvenil</div>
+          <div class="sport-extra"><span>
+            <div class="sport-desc">Desarrollo cognitivo temprano</div>
+            <div class="sport-subtext">Trabajar la velocidad de decisión desde joven acelera el desarrollo técnico. Los jugadores aprenden a leer el juego antes de que sea instinto.</div>
+          </span></div>
+        </div>
+      </div>
+      <div class="sport-card fade-up d1">
+        <img src="vixon_destacadas/vixon_team_sports.png" alt="Deportes de equipo con chaleco LED verde">
+        <div class="sport-overlay">
+          <div class="sport-name">Deportes de equipo</div>
+          <div class="sport-extra"><span>
+            <div class="sport-desc">Coordinación grupal</div>
+            <div class="sport-subtext">Sincronizá patrones de reacción colectiva en distintas fases del juego.</div>
+          </span></div>
+        </div>
+      </div>
+      <div class="sport-card fade-up d2">
+        <img src="vixon_destacadas/vixon_high_performance.png" alt="Alto rendimiento con chaleco Vixon">
+        <div class="sport-overlay">
+          <div class="sport-name">Alto rendimiento</div>
+          <div class="sport-extra"><span>
+            <div class="sport-desc">Ambientes exigentes</div>
+            <div class="sport-subtext">Benchmarks cognitivos para programas profesionales y semiprofesionales.</div>
+          </span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════ TESTIMONIALS ══════ -->
+  <section id="testimonials">
+
+    <div class="fade-up">
+      <div class="section-label">04 — Testimonios</div>
+      <h2 class="section-title">Lo que dicen<br><em>quienes ya lo usan</em></h2>
+    </div>
+
+    <div class="t-carousel fade-up d1">
+
+      <div class="t-slide active" data-index="0">
+        <div class="t-photo">
+          <img src="images/Sorin.jpg" alt="Martín G.">
+          <span class="t-photo-label">Foto · placeholder</span>
+        </div>
+        <div class="t-body">
+          <p class="t-quote">"Desde que incorporamos Vixon, los jugadores reaccionan diferente en el partido. Lo notan ellos mismos — y eso es lo más importante."</p>
+          <div class="t-author">
+            <div class="tcard-avatar">MG</div>
+            <div>
+              <div class="tcard-name">Martín G.</div>
+              <div class="tcard-role">Entrenador Principal · Club Atlético San Martín</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="t-slide" data-index="1">
+        <div class="t-photo">
+          <img src="images/3.jpg" alt="Tomás R.">
+          <span class="t-photo-label">Foto · placeholder</span>
+        </div>
+        <div class="t-body">
+          <p class="t-quote">"Al principio pensé que era un gadget más. Después de la primera sesión entendí que era algo completamente distinto. Tu cabeza trabaja de otra forma."</p>
+          <div class="t-author">
+            <div class="tcard-avatar">TR</div>
+            <div>
+              <div class="tcard-name">Tomás R.</div>
+              <div class="tcard-role">Jugador Semiprofesional · Sub-20</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="t-slide" data-index="2">
+        <div class="t-photo">
+          <img src="images/7.jpg" alt="Diego F.">
+          <span class="t-photo-label">Foto · placeholder</span>
+        </div>
+        <div class="t-body">
+          <p class="t-quote">"Fue fácil convencer a la comisión directiva. El producto se explica solo cuando lo ven en acción. Nadie sale indiferente de la primera demo."</p>
+          <div class="t-author">
+            <div class="tcard-avatar">DF</div>
+            <div>
+              <div class="tcard-name">Diego F.</div>
+              <div class="tcard-role">Director Técnico · Barracas Central Futsal</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="t-dots">
+        <button class="t-dot active" data-target="0" aria-label="Testimonio 1"></button>
+        <button class="t-dot" data-target="1" aria-label="Testimonio 2"></button>
+        <button class="t-dot" data-target="2" aria-label="Testimonio 3"></button>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- ══════ DEMO ══════ -->
+  <section id="demo">
+    <div class="demo-inner">
+
+      <div class="fade-up">
+        <div class="section-label">05 — Contacto</div>
+        <h2 class="demo-headline">
+          Pedí<br><em>tu demo</em>
+        </h2>
+        <p class="demo-sub">Dejanos tus datos y te contactamos en menos de 24 horas para coordinar una sesión en vivo. Sin costo, sin compromiso.</p>
+
+        <p class="demo-availability">Disponible para clubes, academias y programas individuales</p>
+
+        <div class="demo-trust"><div class="trust-dot"></div><span class="trust-text">Respuesta en menos de 24 horas</span></div>
+        <div class="demo-trust"><div class="trust-dot"></div><span class="trust-text">Sin costo para la primera sesión</span></div>
+        <div class="demo-trust"><div class="trust-dot"></div><span class="trust-text">Para clubes de cualquier nivel</span></div>
+
+        <div class="demo-next">
+          <div class="demo-next-label">Qué pasa después</div>
+          <div class="next-step">
+            <span class="ns-num">01</span>
+            <span class="ns-text">Te enviamos un video corto del producto y respondemos todas tus preguntas en menos de 24 horas.</span>
+          </div>
+          <div class="next-step">
+            <span class="ns-num">02</span>
+            <span class="ns-text">Coordinamos una llamada de 30 minutos para entender las necesidades de tu programa.</span>
+          </div>
+          <div class="next-step">
+            <span class="ns-num">03</span>
+            <span class="ns-text">Vamos a tu instalación y hacemos una sesión de prueba con tus jugadores — totalmente a nuestro cargo.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="fade-up d2">
+        <form class="demo-form" id="demoForm" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="fname">Nombre</label>
+              <input type="text" id="fname" name="fname" placeholder="Juan" required>
+            </div>
+            <div class="form-group">
+              <label for="lname">Apellido</label>
+              <input type="text" id="lname" name="lname" placeholder="García" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="club">Club u organización</label>
+            <input type="text" id="club" name="club" placeholder="Club Atlético...">
+          </div>
+          <div class="form-group">
+            <label for="role">Tu rol</label>
+            <select id="role" name="role" required>
+              <option value="" disabled selected>Seleccioná tu rol</option>
+              <option>Entrenador Principal</option>
+              <option>Entrenador Asistente</option>
+              <option>Director Técnico</option>
+              <option>Director de Club</option>
+              <option>Jugador</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="vos@club.com" required>
+          </div>
+          <div class="form-group">
+            <label for="phone">Teléfono (WhatsApp)</label>
+            <input type="tel" id="phone" name="phone" placeholder="+54 9 11...">
+          </div>
+          <button class="form-submit" type="submit">
+            <span class="btn-text">Quiero una demo</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </form>
+        <div class="form-success" id="formSuccess">
+          <div class="success-check">✓</div>
+          <div class="success-title">Nos ponemos en contacto.</div>
+          <p class="success-text">Gracias por escribirnos. El equipo de Vixon te va a contactar en menos de 24 horas para coordinar tu demo.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══════ FOOTER ══════ -->
+  <footer>
+    <a href="#" class="footer-logo"><img src="logo/logoWhite.svg" alt="Vixon"></a>
+    <ul class="footer-links">
+      <li><a href="#product">Producto</a></li>
+      <li><a href="#experience">Experiencia</a></li>
+      <li><a href="#neuro">Neuro</a></li>
+      <li><a href="#demo">Contacto</a></li>
+    </ul>
+    <div class="footer-copy">© 2026 Vixon · vixon.pro</div>
+  </footer>
+
+</div><!-- /site -->
+
+
+
+
+<script>
+/* ── INTRO ── */
+const intro      = document.getElementById('video-intro');
+const site       = document.getElementById('site');
+const navbar     = document.getElementById('navbar');
+const heroBg     = document.getElementById('heroBg');
+const scrollHint = document.getElementById('scrollHint');
+const prefersRM  = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let introGone = false;
+
+function dismissIntro() {
+  if (introGone) return;
+  introGone = true;
+  intro.classList.add('hidden');
+  site.classList.add('visible');
+  setTimeout(() => { intro.style.display = 'none'; }, 900);
+}
+
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 40) dismissIntro();
+  navbar.classList.toggle('scrolled', window.scrollY > 10);
+  if (!prefersRM && heroBg && window.scrollY < window.innerHeight) {
+    heroBg.style.transform = `scale(1.08) translateY(${window.scrollY * 0.18}px)`;
+  }
+  updateActiveNav();
+}, { passive: true });
+
+window.addEventListener('wheel', e => { if (e.deltaY > 0) dismissIntro(); }, { passive: true });
+window.addEventListener('touchstart', dismissIntro, { once: true, passive: true });
+setTimeout(() => { if (!introGone) scrollHint.style.opacity = '1'; }, 1500);
+
+/* ── ACTIVE NAV ── */
+const NAV_IDS = ['product','neuro','experience','testimonials','demo'];
+function updateActiveNav() {
+  const trigger = window.scrollY + window.innerHeight * 0.4;
+  NAV_IDS.forEach(id => {
+    const el = document.getElementById(id); const link = document.querySelector(`[data-section="${id}"]`);
+    if (!el || !link) return;
+    link.classList.toggle('active', trigger >= el.offsetTop && trigger < el.offsetTop + el.offsetHeight);
+  });
+}
+
+/* ── MOBILE MENU ── */
+const hamburger = document.getElementById('navHamburger');
+const mobileMenu = document.getElementById('mobileMenu');
+hamburger.addEventListener('click', () => {
+  const open = hamburger.classList.toggle('open');
+  mobileMenu.classList.toggle('open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+});
+document.querySelectorAll('.m-link').forEach(l => l.addEventListener('click', () => {
+  hamburger.classList.remove('open'); mobileMenu.classList.remove('open'); document.body.style.overflow = '';
+}));
+
+/* ── SCROLL REVEAL ── */
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); } });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.fade-up').forEach(el => revealObs.observe(el));
+
+/* ── NEURO STEP ACTIVE ── */
+const stepObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => e.target.classList.toggle('active', e.isIntersecting));
+}, { threshold: 0.65 });
+document.querySelectorAll('.neuro-step').forEach(s => stepObs.observe(s));
+
+/* ── FEATURE ACCORDION ── */
+document.querySelectorAll('.feat-list').forEach(list => {
+  list.querySelectorAll('.feat-item').forEach(item => {
+    item.addEventListener('click', () => {
+      list.querySelectorAll('.feat-item').forEach(i => i.classList.remove('open'));
+      item.classList.add('open');
+    });
+  });
+});
+
+/* ── FORM ── */
+document.getElementById('demoForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target;
+  if (!f.fname.value.trim() || !f.email.value.trim()) return;
+  f.style.display = 'none';
+  document.getElementById('formSuccess').classList.add('show');
+});
+
+/* ── SMOOTH SCROLL ── */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const id = a.getAttribute('href').slice(1); if (!id) return;
+    const target = document.getElementById(id); if (!target) return;
+    e.preventDefault();
+    const offset = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 64;
+    window.scrollTo({ top: Math.max(0, target.offsetTop - offset), behavior: 'smooth' });
+  });
+});
+
+/* ── TESTIMONIALS CAROUSEL ── */
+const tDots      = document.querySelectorAll('.t-dot');
+const tSlides    = document.querySelectorAll('.t-slide');
+const T_DURATION = 5000; // ms por slide
+let tTimer = null;
+let tCurrent = 0;
+
+document.documentElement.style.setProperty('--slide-duration', (T_DURATION / 1000) + 's');
+
+function showSlide(idx) {
+  tCurrent = idx;
+  tSlides.forEach((s, i) => s.classList.toggle('active', i === idx));
+
+  // Resetear y reclasificar dots
+  tDots.forEach((d, i) => {
+    d.classList.remove('active', 'done');
+    if (i < idx) d.classList.add('done');
+  });
+  // Forzar reflow para reiniciar la animación CSS del dot activo
+  const activeDot = tDots[idx];
+  void activeDot.offsetWidth;
+  activeDot.classList.add('active');
+
+  // Auto-avance con loop
+  clearTimeout(tTimer);
+  tTimer = setTimeout(() => showSlide((idx + 1) % tSlides.length), T_DURATION);
+}
+
+// Click en dot = saltar a ese slide
+tDots.forEach(dot => dot.addEventListener('click', () => showSlide(+dot.dataset.target)));
+
+// Arrancar cuando la sección es visible
+const tSection = document.getElementById('testimonials');
+const tStartObs = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) {
+    showSlide(0);
+    tStartObs.disconnect();
+  }
+}, { threshold: 0.3 });
+tStartObs.observe(tSection);
+
+/* ══ Hero v2 — Lights animation ══ */
+(function() {
+  const off       = document.getElementById('hLightOff');
+  const green     = document.getElementById('hLightGreen');
+  const glowNear  = document.getElementById('hLightGlowNear');
+  const glowWide  = document.getElementById('hLightGlowWide');
+  if (!off || !green) return;
+
+  // Preload all images
+  ['lights/off.png', 'lights/green.png'].forEach(src => { const i = new Image(); i.src = src; });
+
+  // After 700ms switch off → green and activate glow animations
+  setTimeout(() => {
+    off.style.opacity      = '0';
+    green.style.opacity    = '1';
+    glowNear.style.opacity = '1';
+    glowWide.style.opacity = '1';
+    glowNear.classList.add('vixon-glow-pulse');
+    glowWide.classList.add('vixon-glow-pulse-wide');
+  }, 700);
+})();
+
+/* ══ i18n — Language switcher ══ */
+(function () {
+  var DICT = {
+    es: {
+      'page.title': 'Vixon — Faster Brain. Faster Body.',
+      'nav.product': 'Producto', 'nav.experience': 'Experiencia',
+      'nav.neuro': 'Neuro', 'nav.testimonials': 'Testimonios', 'nav.cta': 'Quiero una demo',
+      'hero.live': 'Entrenamiento en vivo',
+      'hero.word1': 'CEREBRO MÁS RÁPIDO', 'hero.word2': 'CUERPO MÁS RÁPIDO',
+      'hero.sub': 'Vixon combina un chaleco inteligente con una app de entrenamiento para desarrollar la velocidad de reacción, la atención y la toma de decisiones de los deportistas — en movimiento real, con datos reales.',
+      'hero.cta.primary': 'Pedí una demo', 'hero.cta.secondary': 'Ver cómo funciona',
+      'hero.pillar1.desc': 'El chaleco inteligente', 'hero.pillar2.desc': 'Control y datos en tiempo real', 'hero.pillar3.desc': 'Ciencia detrás del rendimiento',
+      'product.label': '01 — El Sistema',
+      'product.title': 'Dos piezas<br><em>Un sistema</em>',
+      'product.body': 'Un chaleco con LEDs, una app con IA y un motor de datos cognitivos. Tres piezas que trabajan juntas para que cada sesión de entrenamiento deje datos reales sobre cómo piensa y reacciona cada jugador.',
+      'vest.title': 'El chaleco que entrena <em>en movimiento.</em>',
+      'vest.desc': 'Paneles de LEDs RGB que se encienden mientras los jugadores corren. Reciben estímulos visuales en tiempo real y tienen que reaccionar en fracciones de segundo.',
+      'vest.feat1': 'LEDs RGB programables', 'vest.feat1.desc': 'El entrenador configura colores y secuencias desde la app. Cada jugador puede recibir estímulos distintos en simultáneo.',
+      'vest.feat2': 'Sincronización inalámbrica', 'vest.feat2.desc': 'Se conecta en segundos. Sin cables, sin configuración técnica entre ejercicios.',
+      'vest.feat3': 'Diseñado para el campo', 'vest.feat3.desc': 'Liviano y resistente. No interfiere con el movimiento natural del jugador.',
+      'app.title': 'El control que <em>no deja de aprender.</em>',
+      'app.desc': 'Diseñá la sesión, controlá los estímulos en vivo y dejá que NeuroEngine™ — el motor de IA de Vixon — procese los datos cognitivos de cada jugador. La app no solo registra lo que pasó: aprende de cada sesión.',
+      'app.feat1': '5 modos de entrenamiento', 'app.feat1.desc': 'Match mode, Double agents, Unbalanced teams, Warmup, Freeplay. Cada uno con su propia mecánica.',
+      'app.feat2': 'Control en vivo', 'app.feat2.desc': 'Modificá los estímulos mientras el ejercicio está corriendo. Ajustá la dificultad según lo que ves en el campo.',
+      'app.feat3': 'Análisis NeuroEngine™', 'app.feat3.desc': 'Al finalizar cada sesión, NeuroEngine™ genera un informe cognitivo por jugador: tiempo de reacción, consistencia bajo fatiga y evolución semana a semana.',
+      'neuro.label': '02 — Neuro',
+      'neuro.title': 'Por qué<br><em>funciona</em>',
+      'neuro.body': 'El Método Vixon combina neurociencia aplicada, hardware de estímulo y NeuroEngine™ — nuestro motor de IA — para construir un sistema que entrena, mide y aprende. No es un gadget: es un protocolo cognitivo respaldado por ciencia y potenciado por datos reales de cada sesión.',
+      'step1.label': 'Percepción visual', 'step1.title': 'Estímulo visual',
+      'step1.desc': 'El cerebro tarda entre 150 y 300 ms en procesar un estímulo visual y generar una respuesta motora. Ese circuito se puede entrenar — y cuanto más entrenado está, más rápida y precisa es la reacción en el partido.',
+      'step2.label': 'Cognición bajo presión', 'step2.title': 'Decisión bajo presión',
+      'step2.desc': 'Los atletas de élite no reaccionan más rápido por tener mejores reflejos físicos. Su ventaja está en que leen la situación antes, con menos información y en menos tiempo. Eso no es talento innato: es entrenamiento.',
+      'step3.label': 'Transferencia cognitiva', 'step3.title': 'Ejecución en movimiento',
+      'step3.desc': 'El entrenamiento cognitivo es más efectivo cuando ocurre en contexto de movimiento real. El cerebro aprende mejor cuando el estímulo y la respuesta suceden en el mismo ambiente donde se compite.',
+      'step4.label': 'NeuroEngine™', 'step4.title': 'Datos que mejoran el método',
+      'step4.desc': 'NeuroEngine™ analiza los datos cognitivos de cada sesión y construye un modelo de rendimiento individual para cada atleta. Cuantos más datos, mejor calibrado queda el protocolo — y más rápido mejora el jugador. Equipos que aplican el Método Vixon 4 semanas reportan +23% en velocidad de reacción y +31% en precisión de decisión.',
+      'stat1.label': 'Velocidad de reacción<br>Journal of Sports Science &amp; Medicine, 2021',
+      'stat2.label': 'Precisión de decisión bajo presión<br>Frontiers in Psychology, 2022',
+      'cta.label': '¿Listo para verlo?',
+      'cta.title': 'Ya entendiste cómo funciona.<br><em>El siguiente paso es verlo en vivo.</em>',
+      'cta.sub': 'Una demo de Vixon dura 45 minutos. Te vas con la cabeza cambiada sobre cómo puede ser el entrenamiento.',
+      'cta.btn': 'Quiero una demo',
+      'exp.label': '03 — Experiencia',
+      'exp.title': 'Para todo deporte<br>que vive de la<br><em>decisión rápida</em>',
+      'exp.body': 'Donde haya que leer el juego, anticiparse y reaccionar en milisegundos, Vixon tiene algo que aportar. El sistema se adapta a las exigencias de cada deporte, posición y ejercicio.',
+      'sport1.name': 'Fútbol', 'sport1.desc': 'Decisión en velocidad', 'sport1.sub': 'La ventana de 3 segundos antes de una presión, un cambio de frente o un contraataque.',
+      'sport2.name': 'Futsal', 'sport2.desc': 'Reacción en espacios reducidos', 'sport2.sub': 'Velocidad de decisión en contextos de alta presión y poco espacio disponible.',
+      'sport3.name': 'Academia juvenil', 'sport3.desc': 'Desarrollo cognitivo temprano', 'sport3.sub': 'Trabajar la velocidad de decisión desde joven acelera el desarrollo técnico. Los jugadores aprenden a leer el juego antes de que sea instinto.',
+      'sport4.name': 'Deportes de equipo', 'sport4.desc': 'Coordinación grupal', 'sport4.sub': 'Sincronizá patrones de reacción colectiva en distintas fases del juego.',
+      'sport5.name': 'Alto rendimiento', 'sport5.desc': 'Ambientes exigentes', 'sport5.sub': 'Benchmarks cognitivos para programas profesionales y semiprofesionales.',
+      'test.label': '04 — Testimonios',
+      'test.title': 'Lo que dicen<br><em>quienes ya lo usan</em>',
+      'test1.quote': '“Desde que incorporamos Vixon, los jugadores reaccionan diferente en el partido. Lo notan ellos mismos — y eso es lo más importante.”',
+      'test1.role': 'Entrenador Principal · Club Atlético San Martín',
+      'test2.quote': '“Al principio pensé que era un gadget más. Después de la primera sesión entendí que era algo completamente distinto. Tu cabeza trabaja de otra forma.”',
+      'test2.role': 'Jugador Semiprofesional · Sub-20',
+      'test3.quote': '“Fue fácil convencer a la comisión directiva. El producto se explica solo cuando lo ven en acción. Nadie sale indiferente de la primera demo.”',
+      'test3.role': 'Director Técnico · Barracas Central Futsal',
+      'demo.label': '05 — Contacto',
+      'demo.title': 'Pedí<br><em>tu demo</em>',
+      'demo.sub': 'Dejános tus datos y te contactamos en menos de 24 horas para coordinar una sesión en vivo. Sin costo, sin compromiso.',
+      'demo.avail': 'Disponible para clubes, academias y programas individuales',
+      'trust1': 'Respuesta en menos de 24 horas', 'trust2': 'Sin costo para la primera sesión', 'trust3': 'Para clubes de cualquier nivel',
+      'next.label': 'Qué pasa después',
+      'next1': 'Te enviamos un video corto del producto y respondemos todas tus preguntas en menos de 24 horas.',
+      'next2': 'Coordinamos una llamada de 30 minutos para entender las necesidades de tu programa.',
+      'next3': 'Vamos a tu instalación y hacemos una sesión de prueba con tus jugadores — totalmente a nuestro cargo.',
+      'form.fname.label': 'Nombre', 'form.fname.placeholder': 'Juan',
+      'form.lname.label': 'Apellido', 'form.lname.placeholder': 'García',
+      'form.club.label': 'Club u organización', 'form.club.placeholder': 'Club Atlético...',
+      'form.role.label': 'Tu rol', 'form.role.placeholder': 'Selecioná tu rol',
+      'form.role.o1': 'Entrenador Principal', 'form.role.o2': 'Entrenador Asistente',
+      'form.role.o3': 'Director Técnico', 'form.role.o4': 'Director de Club',
+      'form.role.o5': 'Jugador', 'form.role.o6': 'Otro',
+      'form.email.label': 'Email', 'form.email.placeholder': 'vos@club.com',
+      'form.phone.label': 'Teléfono (WhatsApp)', 'form.phone.placeholder': '+54 9 11...',
+      'form.submit': 'Quiero una demo',
+      'success.title': 'Nos ponemos en contacto.',
+      'success.text': 'Gracias por escribirnos. El equipo de Vixon te va a contactar en menos de 24 horas para coordinar tu demo.',
+      'footer.product': 'Producto', 'footer.experience': 'Experiencia', 'footer.neuro': 'Neuro', 'footer.contact': 'Contacto'
+    },
+    en: {
+      'page.title': 'Vixon — Faster Brain. Faster Body.',
+      'nav.product': 'Product', 'nav.experience': 'Experience',
+      'nav.neuro': 'Neuro', 'nav.testimonials': 'Testimonials', 'nav.cta': 'Request a demo',
+      'hero.live': 'Live training',
+      'hero.word1': 'FASTER BRAIN', 'hero.word2': 'FASTER BODY',
+      'hero.sub': 'Vixon combines a smart vest with a training app to develop reaction speed, attention and decision-making in athletes — in real movement, with real data.',
+      'hero.cta.primary': 'Request a demo', 'hero.cta.secondary': 'See how it works',
+      'hero.pillar1.desc': 'The smart vest', 'hero.pillar2.desc': 'Real-time control & data', 'hero.pillar3.desc': 'Science behind performance',
+      'product.label': '01 — The System',
+      'product.title': 'Two pieces<br><em>One system</em>',
+      'product.body': 'An LED vest, an AI-powered app and a cognitive data engine. Three pieces working together so every training session yields real data on how each player thinks and reacts.',
+      'vest.title': 'The vest that trains <em>in motion.</em>',
+      'vest.desc': 'RGB LED panels that light up while players run. They receive real-time visual stimuli and must react in fractions of a second.',
+      'vest.feat1': 'Programmable RGB LEDs', 'vest.feat1.desc': 'The coach configures colors and sequences from the app. Each player can receive different stimuli simultaneously.',
+      'vest.feat2': 'Wireless sync', 'vest.feat2.desc': 'Connects in seconds. No cables, no technical setup between drills.',
+      'vest.feat3': 'Built for the field', 'vest.feat3.desc': 'Lightweight and durable. Doesn’t interfere with the player’s natural movement.',
+      'app.title': 'The control that <em>never stops learning.</em>',
+      'app.desc': 'Design the session, control stimuli live and let NeuroEngine™ — Vixon’s AI engine — process each player’s cognitive data. The app doesn’t just record what happened: it learns from every session.',
+      'app.feat1': '5 training modes', 'app.feat1.desc': 'Match mode, Double agents, Unbalanced teams, Warmup, Freeplay. Each with its own mechanics.',
+      'app.feat2': 'Live control', 'app.feat2.desc': 'Modify stimuli while the drill is running. Adjust difficulty based on what you see on the field.',
+      'app.feat3': 'NeuroEngine™ Analysis', 'app.feat3.desc': 'At the end of each session, NeuroEngine™ generates a cognitive report per player: reaction time, consistency under fatigue and week-over-week progress.',
+      'neuro.label': '02 — Neuro',
+      'neuro.title': 'Why<br><em>it works</em>',
+      'neuro.body': 'The Vixon Method combines applied neuroscience, stimulus hardware and NeuroEngine™ — our AI engine — to build a system that trains, measures and learns. It’s not a gadget: it’s a cognitive protocol backed by science and powered by real data from every session.',
+      'step1.label': 'Visual perception', 'step1.title': 'Visual stimulus',
+      'step1.desc': 'The brain takes 150 to 300 ms to process a visual stimulus and generate a motor response. That circuit can be trained — and the more trained it is, the faster and more precise the reaction in a match.',
+      'step2.label': 'Cognition under pressure', 'step2.title': 'Decision under pressure',
+      'step2.desc': 'Elite athletes don’t react faster because of better physical reflexes. Their edge is reading the situation earlier, with less information and in less time. That’s not innate talent: it’s training.',
+      'step3.label': 'Cognitive transfer', 'step3.title': 'Execution in motion',
+      'step3.desc': 'Cognitive training is most effective when it happens in the context of real movement. The brain learns better when the stimulus and response occur in the same environment where competition takes place.',
+      'step4.label': 'NeuroEngine™', 'step4.title': 'Data that improves the method',
+      'step4.desc': 'NeuroEngine™ analyzes the cognitive data from each session and builds an individual performance model for each athlete. The more data, the better calibrated the protocol — and the faster the player improves. Teams applying the Vixon Method for 4 weeks report +23% in reaction speed and +31% in decision accuracy.',
+      'stat1.label': 'Reaction speed<br>Journal of Sports Science &amp; Medicine, 2021',
+      'stat2.label': 'Decision accuracy under pressure<br>Frontiers in Psychology, 2022',
+      'cta.label': 'Ready to see it?',
+      'cta.title': 'You get how it works.<br><em>The next step is seeing it live.</em>',
+      'cta.sub': 'A Vixon demo takes 45 minutes. You leave with your perspective on training completely changed.',
+      'cta.btn': 'Request a demo',
+      'exp.label': '03 — Experience',
+      'exp.title': 'For every sport<br>that lives on<br><em>fast decisions</em>',
+      'exp.body': 'Wherever you need to read the game, anticipate and react in milliseconds, Vixon has something to offer. The system adapts to the demands of each sport, position and drill.',
+      'sport1.name': 'Soccer', 'sport1.desc': 'Speed decisions', 'sport1.sub': 'The 3-second window before a press, a switch of play or a counterattack.',
+      'sport2.name': 'Futsal', 'sport2.desc': 'Reaction in tight spaces', 'sport2.sub': 'Decision speed in high-pressure contexts with limited space.',
+      'sport3.name': 'Youth academy', 'sport3.desc': 'Early cognitive development', 'sport3.sub': 'Training decision speed from a young age accelerates technical development. Players learn to read the game before it becomes instinct.',
+      'sport4.name': 'Team sports', 'sport4.desc': 'Group coordination', 'sport4.sub': 'Synchronize collective reaction patterns across different phases of play.',
+      'sport5.name': 'High performance', 'sport5.desc': 'Demanding environments', 'sport5.sub': 'Cognitive benchmarks for professional and semi-professional programs.',
+      'test.label': '04 — Testimonials',
+      'test.title': 'What those who<br><em>use it say</em>',
+      'test1.quote': '“Since we introduced Vixon, players react differently in matches. They notice it themselves — and that’s what matters most.”',
+      'test1.role': 'Head Coach · Club Atlético San Martín',
+      'test2.quote': '“At first I thought it was just another gadget. After the first session I understood it was something completely different. Your mind works differently.”',
+      'test2.role': 'Semi-Professional Player · U-20',
+      'test3.quote': '“It was easy to convince the board. The product explains itself when they see it in action. Nobody leaves the first demo indifferent.”',
+      'test3.role': 'Technical Director · Barracas Central Futsal',
+      'demo.label': '05 — Contact',
+      'demo.title': 'Request<br><em>your demo</em>',
+      'demo.sub': 'Leave your details and we’ll reach out within 24 hours to schedule a live session. No cost, no commitment.',
+      'demo.avail': 'Available for clubs, academies and individual programs',
+      'trust1': 'Response within 24 hours', 'trust2': 'No cost for the first session', 'trust3': 'For clubs of any level',
+      'next.label': 'What happens next',
+      'next1': 'We send you a short product video and answer all your questions within 24 hours.',
+      'next2': 'We schedule a 30-minute call to understand your program’s needs.',
+      'next3': 'We come to your facility and run a trial session with your players — fully on us.',
+      'form.fname.label': 'First name', 'form.fname.placeholder': 'John',
+      'form.lname.label': 'Last name', 'form.lname.placeholder': 'Smith',
+      'form.club.label': 'Club or organization', 'form.club.placeholder': 'Athletic Club...',
+      'form.role.label': 'Your role', 'form.role.placeholder': 'Select your role',
+      'form.role.o1': 'Head Coach', 'form.role.o2': 'Assistant Coach',
+      'form.role.o3': 'Technical Director', 'form.role.o4': 'Club Director',
+      'form.role.o5': 'Player', 'form.role.o6': 'Other',
+      'form.email.label': 'Email', 'form.email.placeholder': 'you@club.com',
+      'form.phone.label': 'Phone (WhatsApp)', 'form.phone.placeholder': '+1 (555)...',
+      'form.submit': 'Request a demo',
+      'success.title': 'We’ll be in touch.',
+      'success.text': 'Thanks for reaching out. The Vixon team will contact you within 24 hours to schedule your demo.',
+      'footer.product': 'Product', 'footer.experience': 'Experience', 'footer.neuro': 'Neuro', 'footer.contact': 'Contact'
+    }
+  };
+
+  var lang = (localStorage.getItem('vixon-lang') || 'es');
+
+  function applyLang(l) {
+    lang = l;
+    localStorage.setItem('vixon-lang', lang);
+    document.documentElement.lang = lang;
+    document.title = DICT[lang]['page.title'];
+
+    var t = DICT[lang];
+    var $ = function(s) { return document.querySelector(s); };
+    var $$ = function(s) { return document.querySelectorAll(s); };
+    var txt = function(s, k) { var e = $(s); if (e && t[k] !== undefined) e.textContent = t[k]; };
+    var html = function(s, k) { var e = $(s); if (e && t[k] !== undefined) e.innerHTML = t[k]; };
+
+    /* toggle active state on all lang buttons (desktop + mobile) */
+    $$('.lang-btn').forEach(function(b) { b.classList.toggle('active', b.dataset.lang === lang); });
+
+    /* ── Nav ── */
+    var ps = $('[data-section="product"]'); if (ps) ps.textContent = t['nav.product'];
+    var es = $('[data-section="experience"]'); if (es) es.textContent = t['nav.experience'];
+    var ns = $('[data-section="neuro"]'); if (ns) ns.textContent = t['nav.neuro'];
+    var ts = $('[data-section="testimonials"]'); if (ts) ts.textContent = t['nav.testimonials'];
+    var nc = $('.nav-cta'); if (nc) nc.textContent = t['nav.cta'];
+
+    var mLinks = $$('.mobile-menu .m-link');
+    var mKeys = ['nav.product','nav.experience','nav.neuro','nav.testimonials','nav.cta'];
+    mLinks.forEach(function(a, i) { if (mKeys[i]) a.textContent = t[mKeys[i]]; });
+
+    /* ── Hero ── */
+    var hlt = $('.hero-live-text'); if (hlt) hlt.textContent = t['hero.live'];
+
+    var hWords = $$('.hero-headline .headline-word span');
+    ['hero.word1','hero.word2'].forEach(function(k, i) {
+      if (hWords[i]) hWords[i].textContent = t[k];
+    });
+
+    txt('.hero-sub', 'hero.sub');
+    var hpbt = $('.hero-actions .btn-primary .btn-text'); if (hpbt) hpbt.textContent = t['hero.cta.primary'];
+    var hgb = $('.hero-actions .btn-ghost'); if (hgb) hgb.textContent = t['hero.cta.secondary'];
+
+    var pdescs = $$('.pillar-desc');
+    ['hero.pillar1.desc','hero.pillar2.desc','hero.pillar3.desc'].forEach(function(k, i) {
+      if (pdescs[i]) pdescs[i].textContent = t[k];
+    });
+
+    /* ── Product ── */
+    txt('#product .section-label', 'product.label');
+    html('#product .section-title', 'product.title');
+    txt('#product .section-body', 'product.body');
+
+    var pCards = $$('#product .pc-card');
+    if (pCards[0]) {
+      var pt = pCards[0].querySelector('.pc-title'); if (pt) pt.innerHTML = t['vest.title'];
+      var pd = pCards[0].querySelector('.pc-desc'); if (pd) pd.textContent = t['vest.desc'];
+      var fl = pCards[0].querySelectorAll('.pc-flabel');
+      var fd = pCards[0].querySelectorAll('.pc-feat-desc > span');
+      [['vest.feat1','vest.feat1.desc'],['vest.feat2','vest.feat2.desc'],['vest.feat3','vest.feat3.desc']].forEach(function(pair,i) {
+        if (fl[i]) fl[i].textContent = t[pair[0]];
+        if (fd[i]) fd[i].textContent = t[pair[1]];
+      });
+    }
+    if (pCards[1]) {
+      var at = pCards[1].querySelector('.pc-title'); if (at) at.innerHTML = t['app.title'];
+      var ad = pCards[1].querySelector('.pc-desc'); if (ad) ad.textContent = t['app.desc'];
+      var fl2 = pCards[1].querySelectorAll('.pc-flabel');
+      var fd2 = pCards[1].querySelectorAll('.pc-feat-desc > span');
+      [['app.feat1','app.feat1.desc'],['app.feat2','app.feat2.desc'],['app.feat3','app.feat3.desc']].forEach(function(pair,i) {
+        if (fl2[i]) fl2[i].textContent = t[pair[0]];
+        if (fd2[i]) fd2[i].textContent = t[pair[1]];
+      });
+    }
+
+    /* ── Neuro ── */
+    txt('#neuro .section-label', 'neuro.label');
+    html('#neuro .section-title', 'neuro.title');
+    txt('#neuro .section-body', 'neuro.body');
+
+    $$('.neuro-step').forEach(function(step, i) {
+      var k = 'step' + (i + 1);
+      var lbl = step.querySelector('.step-label'); if (lbl) lbl.textContent = t[k + '.label'];
+      var ttl = step.querySelector('.step-title'); if (ttl) ttl.textContent = t[k + '.title'];
+      var dsc = step.querySelector('.step-desc');  if (dsc) dsc.textContent = t[k + '.desc'];
+    });
+
+    var nstats = $$('.nstat-label');
+    if (nstats[0]) nstats[0].innerHTML = t['stat1.label'];
+    if (nstats[1]) nstats[1].innerHTML = t['stat2.label'];
+
+    /* ── CTA band ── */
+    txt('.cta-band-label', 'cta.label');
+    html('.cta-band-headline', 'cta.title');
+    txt('.cta-band-sub', 'cta.sub');
+    var ctabt = $('.cta-band .btn-primary .btn-text'); if (ctabt) ctabt.textContent = t['cta.btn'];
+
+    /* ── Experience ── */
+    txt('#experience .section-label', 'exp.label');
+    html('#experience .section-title', 'exp.title');
+    txt('#experience .section-body', 'exp.body');
+
+    $$('.sport-card').forEach(function(card, i) {
+      var k = 'sport' + (i + 1);
+      var nm = card.querySelector('.sport-name'); if (nm) nm.textContent = t[k + '.name'];
+      var ds = card.querySelector('.sport-desc'); if (ds) ds.textContent = t[k + '.desc'];
+      var sb = card.querySelector('.sport-subtext'); if (sb) sb.textContent = t[k + '.sub'];
+    });
+
+    /* ── Testimonials ── */
+    txt('#testimonials .section-label', 'test.label');
+    html('#testimonials .section-title', 'test.title');
+
+    $$('.t-slide').forEach(function(slide, i) {
+      var k = 'test' + (i + 1);
+      var q = slide.querySelector('.t-quote'); if (q) q.textContent = t[k + '.quote'];
+      var r = slide.querySelector('.tcard-role'); if (r) r.textContent = t[k + '.role'];
+    });
+
+    /* ── Demo ── */
+    txt('#demo .section-label', 'demo.label');
+    html('#demo .demo-headline', 'demo.title');
+    txt('.demo-sub', 'demo.sub');
+    txt('.demo-availability', 'demo.avail');
+
+    var trustTxts = $$('.trust-text');
+    ['trust1','trust2','trust3'].forEach(function(k, i) {
+      if (trustTxts[i]) trustTxts[i].textContent = t[k];
+    });
+
+    txt('.demo-next-label', 'next.label');
+    var nsTexts = $$('.ns-text');
+    ['next1','next2','next3'].forEach(function(k, i) {
+      if (nsTexts[i]) nsTexts[i].textContent = t[k];
+    });
+
+    /* Form */
+    var demoForm = $('#demoForm');
+    if (demoForm) {
+      var lblMap = [
+        ['fname','form.fname.label'],['lname','form.lname.label'],
+        ['club','form.club.label'],['role','form.role.label'],
+        ['email','form.email.label'],['phone','form.phone.label']
+      ];
+      lblMap.forEach(function(pair) {
+        var lbl = demoForm.querySelector('label[for="' + pair[0] + '"]');
+        if (lbl) lbl.textContent = t[pair[1]];
+      });
+      var setph = function(id, k) { var e = demoForm.querySelector('#' + id); if (e) e.placeholder = t[k]; };
+      setph('fname','form.fname.placeholder'); setph('lname','form.lname.placeholder');
+      setph('club','form.club.placeholder');   setph('email','form.email.placeholder');
+      setph('phone','form.phone.placeholder');
+      var roleEl = demoForm.querySelector('#role');
+      if (roleEl) {
+        var opts = roleEl.querySelectorAll('option');
+        var oKeys = ['form.role.placeholder','form.role.o1','form.role.o2','form.role.o3','form.role.o4','form.role.o5','form.role.o6'];
+        opts.forEach(function(opt, i) { if (oKeys[i]) opt.textContent = t[oKeys[i]]; });
+      }
+      var sbmTxt = demoForm.querySelector('.form-submit .btn-text');
+      if (sbmTxt) sbmTxt.textContent = t['form.submit'];
+    }
+
+    txt('.success-title', 'success.title');
+    txt('.success-text', 'success.text');
+
+    /* ── Footer ── */
+    var fLinks = $$('.footer-links a');
+    ['footer.product','footer.experience','footer.neuro','footer.contact'].forEach(function(k, i) {
+      if (fLinks[i]) fLinks[i].textContent = t[k];
+    });
+  }
+
+  /* Bind all lang buttons (desktop + mobile share same handler) */
+  document.querySelectorAll('.lang-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { applyLang(btn.dataset.lang); });
+  });
+
+  /* Init on load */
+  applyLang(lang);
+})();
+
+/* ── Hero variant switch ── */
+(function(){
+  var btns = document.querySelectorAll('.hvs-btn');
+  var saved = localStorage.getItem('vixon-hero-variant') || 'video';
+  function setVariant(v) {
+    document.body.setAttribute('data-hero-variant', v);
+    localStorage.setItem('vixon-hero-variant', v);
+    btns.forEach(function(b) { b.classList.toggle('active', b.dataset.variant === v); });
+    if (v === 'video') {
+      var vid = document.getElementById('heroBg');
+      if (vid) { vid.play().catch(function(){}); }
+    }
+  }
+  btns.forEach(function(btn) {
+    btn.addEventListener('click', function() { setVariant(btn.dataset.variant); });
+  });
+  setVariant(saved);
+})();
+
+/* ══ Apply static defaults ══ */
+(function() {
+  document.body.setAttribute('data-decor', 'full');
+  document.body.setAttribute('data-app-variant', 'session');
+  document.documentElement.style.setProperty('--display-font', "'Inter', sans-serif");
+  document.documentElement.style.setProperty('--em-font',    "'Inter', sans-serif");
+  document.documentElement.style.setProperty('--em-style',   'italic');
+  document.documentElement.style.setProperty('--em-weight',  '800');
+  document.documentElement.style.setProperty('--em-spacing', '-.03em');
+  document.documentElement.style.setProperty('--top-obj-pos', 'center 30%');
+  document.documentElement.style.setProperty('--top-scale',   '1.02');
+  const topImg = document.getElementById('topFullImg') || document.querySelector('.tv-figure img');
+  if (topImg) topImg.src = 'vixon_destacadas/vixon1.png';
+  const appVisual = document.getElementById('tvApp');
+  if (appVisual) appVisual.style.backgroundImage = "url('images/7.jpg')";
+})();
+</script>
+
+</body>
+</html>
