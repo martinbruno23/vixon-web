@@ -1556,7 +1556,7 @@ body[data-decor="subtle"] .tv-callout.co-D { display: none !important; }
   #product { padding:72px 24px 0; }
 
   .hero-content { padding:0 24px 64px; max-width:100%; }
-  .hero-headline { font-size:clamp(52px,13vw,72px); }
+  .hero-headline { font-size:clamp(32px,9vw,48px); text-wrap:pretty; }
   .hero-pillars  { display:none; }
   .hero-live     { top:calc(var(--nav-h) + 14px); right:24px; }
   .hero-scroll   { left:24px; }
@@ -1580,8 +1580,11 @@ body[data-decor="subtle"] .tv-callout.co-D { display: none !important; }
   .cta-band-inner { flex-direction:column; align-items:flex-start; gap:24px; }
 
   .experience-header { grid-template-columns:1fr; }
-  .sports-grid { grid-template-columns:repeat(2,1fr); }
-  .sport-card:first-child { grid-column:span 2; aspect-ratio:16/8; }
+  .sports-grid { grid-template-columns:1fr; gap:10px; }
+  .sport-card:first-child { grid-column:span 1; aspect-ratio:3/2; }
+  .flip-back { padding:20px 18px; }
+  .sport-back-name { font-size:20px; }
+  .sport-back-body { font-size:12.5px; }
 
   .neuro-grid { grid-template-columns:1fr; }
   .neuro-stats { grid-template-columns:1fr; }
@@ -1593,10 +1596,11 @@ body[data-decor="subtle"] .tv-callout.co-D { display: none !important; }
   .who-cards { grid-template-columns:1fr; }
   .who-card { padding:32px 24px; }
 
+  #product { padding:72px 0 0; }
   .product-cards { grid-template-columns:1fr; }
   .pc-grid { grid-template-columns:1fr; gap:16px; }
-  .pc-visual { height:380px; }
-  .pc-body { padding:28px 24px 32px; }
+  .pc-visual { height:360px; }
+  .pc-body { padding:28px 20px 32px; }
   .pc-watermark { font-size:72px; }
   .pc-meta-tag.mt-tl, .pc-meta-tag.mt-tr, .pc-meta-tag.mt-bl, .pc-meta-tag.mt-br { display:none; }
   .pc-meta-tag.mt-tl, .pc-meta-tag.mt-tr { display:inline-flex; left:24px; right:auto; top:20px; }
@@ -1610,6 +1614,7 @@ body[data-decor="subtle"] .tv-callout.co-D { display: none !important; }
   .tv-live { top:20px; right:24px; }
 
   .t-quote { max-width:100%; }
+  .t-body { min-height:340px; }
 
   .demo-inner { grid-template-columns:1fr; gap:48px; }
   #demo { padding:72px 24px; }
