@@ -74,27 +74,36 @@ button { cursor: pointer; }
 }
 #video-intro.hidden { opacity: 0; pointer-events: none; transform: scale(1.04); }
 
-.led-scene {
-  position: absolute; inset: 0;
-  background: #090909;
-  display: flex; align-items: center; justify-content: center; overflow: hidden;
+.led-strips-wrap {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden; background:#090909;
 }
-.led-scene::before {
-  content: ''; position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse 55% 35% at 50% 55%, rgba(200,244,0,.07) 0%, transparent 70%),
-    radial-gradient(ellipse 25% 20% at 35% 40%, rgba(200,244,0,.04) 0%, transparent 60%);
+.led-strips-wrap::before {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(ellipse 60% 40% at 50% 58%, rgba(200,244,0,.07) 0%, transparent 70%);
 }
-.field-silhouette { position:absolute; bottom:0; left:0; right:0; height:38%; background:linear-gradient(to top,#0a0d08 0%,transparent 100%); }
-.player-shape { position:relative; width:180px; height:340px; }
-.led-grid { position:absolute; top:80px; left:50%; transform:translateX(-50%); display:grid; grid-template-columns:repeat(3,1fr); gap:8px; width:90px; }
-.led { width:16px; height:22px; border-radius:3px; background:var(--lime); animation:ledPulse 1.4s ease-in-out infinite; box-shadow:0 0 8px var(--lime),0 0 20px rgba(200,244,0,.3); }
-.led:nth-child(3),.led:nth-child(5),.led:nth-child(8) { background:var(--red); box-shadow:0 0 8px var(--red),0 0 20px rgba(255,59,59,.3); }
-.led:nth-child(2){animation-delay:.15s} .led:nth-child(3){animation-delay:.3s}
-.led:nth-child(4){animation-delay:.45s} .led:nth-child(5){animation-delay:.6s}
-.led:nth-child(6){animation-delay:.75s} .led:nth-child(7){animation-delay:.9s}
-.led:nth-child(8){animation-delay:1.05s} .led:nth-child(9){animation-delay:1.2s}
-@keyframes ledPulse { 0%,100%{opacity:1;transform:scale(1)} 40%{opacity:.15;transform:scale(.9)} 60%{opacity:1;transform:scale(1.05)} }
+.led-strips {
+  display:flex; align-items:flex-end; gap:12px;
+  position:relative; z-index:2;
+}
+.led-strip {
+  width:11px; border-radius:6px;
+  animation:stripBlink 2.2s ease-in-out infinite;
+  transform-origin:bottom center;
+}
+.led-strip:nth-child(1) { height:120px; animation-delay:0s; }
+.led-strip:nth-child(2) { height:200px; animation-delay:0.3s; }
+.led-strip:nth-child(3) { height:240px; animation-delay:0.6s; }
+.led-strip:nth-child(4) { height:160px; animation-delay:0.9s; }
+@keyframes stripBlink {
+  0%   { opacity:.1;  transform:scaleY(.45); background:#D2FF00; box-shadow:none; }
+  18%  { opacity:1;   transform:scaleY(1);   background:#D2FF00; box-shadow:0 0 16px #D2FF00,0 0 40px rgba(210,255,0,.45); }
+  36%  { opacity:.08; transform:scaleY(.35); background:#ff3b3b; box-shadow:none; }
+  58%  { opacity:1;   transform:scaleY(1);   background:#ff3b3b; box-shadow:0 0 16px #ff3b3b,0 0 40px rgba(255,59,59,.4); }
+  80%  { opacity:.1;  transform:scaleY(.45); background:#D2FF00; box-shadow:none; }
+  100% { opacity:.1;  transform:scaleY(.45); background:#D2FF00; box-shadow:none; }
+}
 
 .intro-logo { position:relative; z-index:2; text-align:center; }
 .intro-logo img { height:38px; width:auto; margin:0 auto; }
@@ -491,6 +500,26 @@ section { padding:120px 48px; }
 .sport-extra { display:grid; grid-template-rows:0fr; transition:grid-template-rows .32s var(--ease), margin-top .32s var(--ease); margin-top:0; }
 .sport-extra > span { overflow:hidden; display:block; }
 .sport-card:hover .sport-extra { grid-template-rows:1fr; margin-top:10px; }
+
+/* ── Sport card flip ── */
+.sport-card { overflow:visible; perspective:1000px; }
+.flip-inner { position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:transform .65s cubic-bezier(.4,0,.2,1); }
+.sport-card.flipped .flip-inner { transform:rotateY(180deg); }
+@media (hover:hover) { .sport-card:hover .flip-inner { transform:rotateY(180deg); } }
+.flip-front, .flip-back { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; overflow:hidden; }
+.flip-back { transform:rotateY(180deg); background:#0f0f0f; display:flex; flex-direction:column; justify-content:flex-end; padding:28px 24px; }
+.sport-back-name { font-family:var(--display-font); font-weight:700; font-size:clamp(18px,2.5vw,26px); color:var(--white); letter-spacing:-.02em; line-height:1.1; margin-bottom:10px; }
+.sport-back-desc { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.14em; color:var(--lime); text-transform:uppercase; margin-bottom:14px; }
+.sport-back-body { font-size:13px; font-weight:300; line-height:1.65; color:rgba(242,242,238,.58); }
+.flip-hint { position:absolute; top:14px; right:14px; z-index:5; width:28px; height:28px; border-radius:50%; border:1px solid rgba(255,255,255,.22); display:flex; align-items:center; justify-content:center; pointer-events:none; font-size:14px; color:rgba(255,255,255,.4); }
+@media (hover:hover) { .flip-hint { display:none; } }
+
+/* ── Outline / secondary CTA ── */
+.btn-outline { display:inline-flex; align-items:center; gap:10px; color:var(--white); font-family:var(--display-font); font-size:14px; font-weight:600; letter-spacing:-.005em; padding:14px 24px; border-radius:2px; border:1px solid rgba(242,242,238,.28); transition:border-color .2s,color .2s; }
+.btn-outline:hover { border-color:var(--lime); color:var(--lime); }
+.btn-outline svg { width:15px; height:15px; transition:transform .2s; }
+.btn-outline:hover svg { transform:translateX(3px); }
+.exp-cta { display:flex; justify-content:center; margin-top:48px; }
 
 .sport-desc { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.12em; color:var(--lime); text-transform:uppercase; margin-bottom:4px; }
 .sport-subtext { font-size:12px; font-weight:300; color:rgba(242,242,238,.6); line-height:1.5; }
@@ -1234,17 +1263,19 @@ body[data-app-variant="session"] .tv-app .fv-match { display: none !important; }
   border-bottom: 1px solid rgba(10,10,10,.09);
   border-left: 2px solid transparent;
   padding-left: 12px;
-  cursor: default;
+  cursor: pointer;
   position: relative;
   transition: border-left-color .25s;
 }
 .pc-feat-row {
   display: flex; align-items: center; gap: 16px;
-  position: relative;
+  position: relative; min-height: 40px;
 }
+.pc-feat-chevron { width:16px; height:16px; margin-left:auto; flex-shrink:0; color:rgba(10,10,10,.22); transition:transform .25s var(--ease), color .25s; }
+.pc-feat:hover .pc-feat-chevron, .pc-feat.open .pc-feat-chevron { transform:rotate(180deg); color:var(--lime); }
 .pc-feat:last-child { border-bottom: none; }
-.pc-feat:hover { border-left-color: var(--lime); }
-.pc-feat:hover .pc-flabel { color: #000; }
+.pc-feat:hover, .pc-feat.open { border-left-color: var(--lime); }
+.pc-feat:hover .pc-flabel, .pc-feat.open .pc-flabel { color: #000; }
 .pc-fnum {
   font-family: 'DM Mono', monospace;
   font-size: 10px;
@@ -1278,11 +1309,11 @@ body[data-app-variant="session"] .tv-app .fv-match { display: none !important; }
   margin-top: 0;
 }
 .pc-feat-desc > span { overflow: hidden; display: block; }
-.pc-feat:hover .pc-feat-desc {
+.pc-feat:hover .pc-feat-desc, .pc-feat.open .pc-feat-desc {
   grid-template-rows: 1fr;
   margin-top: 8px;
 }
-.pc-feat:hover .pc-feat-desc > span { color: rgba(10,10,10,.62); }
+.pc-feat:hover .pc-feat-desc > span, .pc-feat.open .pc-feat-desc > span { color: rgba(10,10,10,.62); }
 
 
 /* ════════════════════════════════════════
@@ -1604,14 +1635,12 @@ body[data-decor="subtle"] .tv-callout.co-D { display: none !important; }
      VIDEO INTRO
 ════════════════════════════════════ -->
 <div id="video-intro">
-  <div class="led-scene">
-    <div class="field-silhouette"></div>
-    <div class="player-shape">
-      <div class="led-grid">
-        <div class="led"></div><div class="led"></div><div class="led"></div>
-        <div class="led"></div><div class="led"></div><div class="led"></div>
-        <div class="led"></div><div class="led"></div><div class="led"></div>
-      </div>
+  <div class="led-strips-wrap" aria-hidden="true">
+    <div class="led-strips">
+      <div class="led-strip"></div>
+      <div class="led-strip"></div>
+      <div class="led-strip"></div>
+      <div class="led-strip"></div>
     </div>
   </div>
   <div class="intro-logo">
@@ -1735,7 +1764,7 @@ body[data-decor="subtle"] .tv-callout.co-D { display: none !important; }
           <span class="btn-text">Pedí una demo</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </a>
-        <a href="#product" class="btn-ghost">Ver cómo funciona</a>
+        <a href="#demo" class="btn-ghost">Pedí más información</a>
       </div>
     </div>
 
@@ -1831,18 +1860,21 @@ body[data-decor="subtle"] .tv-callout.co-D { display: none !important; }
             <li class="pc-feat" data-comment-anchor="95300ccc3c-li">
               <div class="pc-feat-row">
                 <span class="pc-fnum">01</span><span class="pc-flabel">LEDs RGB programables</span>
+                <svg class="pc-feat-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 6l5 5 5-5"/></svg>
               </div>
               <div class="pc-feat-desc"><span>El entrenador configura colores y secuencias desde la app. Cada jugador puede recibir estímulos distintos en simultáneo.</span></div>
             </li>
             <li class="pc-feat">
               <div class="pc-feat-row">
                 <span class="pc-fnum">02</span><span class="pc-flabel">Sincronización inalámbrica</span>
+                <svg class="pc-feat-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 6l5 5 5-5"/></svg>
               </div>
               <div class="pc-feat-desc"><span>Se conecta en segundos. Sin cables, sin configuración técnica entre ejercicios.</span></div>
             </li>
             <li class="pc-feat">
               <div class="pc-feat-row">
                 <span class="pc-fnum">03</span><span class="pc-flabel">Diseñado para el campo</span>
+                <svg class="pc-feat-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 6l5 5 5-5"/></svg>
               </div>
               <div class="pc-feat-desc"><span>Liviano y resistente. No interfiere con el movimiento natural del jugador.</span></div>
             </li>
@@ -2002,18 +2034,21 @@ body[data-decor="subtle"] .tv-callout.co-D { display: none !important; }
             <li class="pc-feat">
               <div class="pc-feat-row">
                 <span class="pc-fnum">01</span><span class="pc-flabel">5 modos de entrenamiento</span>
+                <svg class="pc-feat-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 6l5 5 5-5"/></svg>
               </div>
               <div class="pc-feat-desc"><span>Match mode, Double agents, Unbalanced teams, Warmup, Freeplay. Cada uno con su propia mecánica.</span></div>
             </li>
             <li class="pc-feat">
               <div class="pc-feat-row">
                 <span class="pc-fnum">02</span><span class="pc-flabel">Control en vivo</span>
+                <svg class="pc-feat-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 6l5 5 5-5"/></svg>
               </div>
               <div class="pc-feat-desc"><span>Modificá los estímulos mientras el ejercicio está corriendo. Ajustá la dificultad según lo que ves en el campo.</span></div>
             </li>
             <li class="pc-feat">
               <div class="pc-feat-row">
                 <span class="pc-fnum">03</span><span class="pc-flabel">Análisis NeuroEngine™</span>
+                <svg class="pc-feat-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 6l5 5 5-5"/></svg>
               </div>
               <div class="pc-feat-desc"><span>Al finalizar cada sesión, NeuroEngine™ genera un informe cognitivo por jugador: tiempo de reacción, consistencia bajo fatiga y evolución semana a semana.</span></div>
             </li>
@@ -2114,55 +2149,82 @@ body[data-decor="subtle"] .tv-callout.co-D { display: none !important; }
 
     <div class="sports-grid">
       <div class="sport-card fade-up">
-        <img src="vixon_destacadas/vixon_soccer_v1.png" alt="Entrenamiento de fútbol con chalecos Vixon">
-        <div class="sport-overlay">
-          <div class="sport-name">Fútbol</div>
-          <div class="sport-extra"><span>
-            <div class="sport-desc">Decisión en velocidad</div>
-            <div class="sport-subtext">La ventana de 3 segundos antes de una presión, un cambio de frente o un contraataque.</div>
-          </span></div>
+        <div class="flip-inner">
+          <div class="flip-front">
+            <img src="vixon_destacadas/vixon_soccer_v1.png" alt="Entrenamiento de fútbol con chalecos Vixon">
+            <div class="sport-overlay"><div class="sport-name">Fútbol</div></div>
+            <div class="flip-hint" aria-hidden="true">↺</div>
+          </div>
+          <div class="flip-back">
+            <div class="sport-back-name">Fútbol</div>
+            <div class="sport-back-desc">Decisión en velocidad</div>
+            <p class="sport-back-body">La ventana de 3 segundos antes de una presión, un cambio de frente o un contraataque.</p>
+          </div>
         </div>
       </div>
       <div class="sport-card fade-up d1">
-        <img src="vixon_destacadas/vixon_futsal.png" alt="Entrenamiento de futsal con Vixon">
-        <div class="sport-overlay">
-          <div class="sport-name">Futsal</div>
-          <div class="sport-extra"><span>
-            <div class="sport-desc">Reacción en espacios reducidos</div>
-            <div class="sport-subtext">Velocidad de decisión en contextos de alta presión y poco espacio disponible.</div>
-          </span></div>
+        <div class="flip-inner">
+          <div class="flip-front">
+            <img src="vixon_destacadas/vixon_futsal.png" alt="Entrenamiento de futsal con Vixon">
+            <div class="sport-overlay"><div class="sport-name">Futsal</div></div>
+            <div class="flip-hint" aria-hidden="true">↺</div>
+          </div>
+          <div class="flip-back">
+            <div class="sport-back-name">Futsal</div>
+            <div class="sport-back-desc">Reacción en espacios reducidos</div>
+            <p class="sport-back-body">Velocidad de decisión en contextos de alta presión y poco espacio disponible.</p>
+          </div>
         </div>
       </div>
       <div class="sport-card fade-up d2">
-        <img src="vixon_destacadas/vixon_academy.png" alt="Academia juvenil con chaleco Vixon">
-        <div class="sport-overlay">
-          <div class="sport-name">Academia juvenil</div>
-          <div class="sport-extra"><span>
-            <div class="sport-desc">Desarrollo cognitivo temprano</div>
-            <div class="sport-subtext">Trabajar la velocidad de decisión desde joven acelera el desarrollo técnico. Los jugadores aprenden a leer el juego antes de que sea instinto.</div>
-          </span></div>
+        <div class="flip-inner">
+          <div class="flip-front">
+            <img src="vixon_destacadas/vixon_academy.png" alt="Academia juvenil con chaleco Vixon">
+            <div class="sport-overlay"><div class="sport-name">Academia juvenil</div></div>
+            <div class="flip-hint" aria-hidden="true">↺</div>
+          </div>
+          <div class="flip-back">
+            <div class="sport-back-name">Academia juvenil</div>
+            <div class="sport-back-desc">Desarrollo cognitivo temprano</div>
+            <p class="sport-back-body">Trabajar la velocidad de decisión desde joven acelera el desarrollo técnico. Los jugadores aprenden a leer el juego antes de que sea instinto.</p>
+          </div>
         </div>
       </div>
       <div class="sport-card fade-up d1">
-        <img src="vixon_destacadas/vixon_team_sports.png" alt="Deportes de equipo con chaleco LED verde">
-        <div class="sport-overlay">
-          <div class="sport-name">Deportes de equipo</div>
-          <div class="sport-extra"><span>
-            <div class="sport-desc">Coordinación grupal</div>
-            <div class="sport-subtext">Sincronizá patrones de reacción colectiva en distintas fases del juego.</div>
-          </span></div>
+        <div class="flip-inner">
+          <div class="flip-front">
+            <img src="vixon_destacadas/vixon_team_sports.png" alt="Deportes de equipo con chaleco LED verde">
+            <div class="sport-overlay"><div class="sport-name">Deportes de equipo</div></div>
+            <div class="flip-hint" aria-hidden="true">↺</div>
+          </div>
+          <div class="flip-back">
+            <div class="sport-back-name">Deportes de equipo</div>
+            <div class="sport-back-desc">Coordinación grupal</div>
+            <p class="sport-back-body">Sincronizá patrones de reacción colectiva en distintas fases del juego.</p>
+          </div>
         </div>
       </div>
       <div class="sport-card fade-up d2">
-        <img src="vixon_destacadas/vixon_high_performance.png" alt="Alto rendimiento con chaleco Vixon">
-        <div class="sport-overlay">
-          <div class="sport-name">Alto rendimiento</div>
-          <div class="sport-extra"><span>
-            <div class="sport-desc">Ambientes exigentes</div>
-            <div class="sport-subtext">Benchmarks cognitivos para programas profesionales y semiprofesionales.</div>
-          </span></div>
+        <div class="flip-inner">
+          <div class="flip-front">
+            <img src="vixon_destacadas/vixon_high_performance.png" alt="Alto rendimiento con chaleco Vixon">
+            <div class="sport-overlay"><div class="sport-name">Alto rendimiento</div></div>
+            <div class="flip-hint" aria-hidden="true">↺</div>
+          </div>
+          <div class="flip-back">
+            <div class="sport-back-name">Alto rendimiento</div>
+            <div class="sport-back-desc">Ambientes exigentes</div>
+            <p class="sport-back-body">Benchmarks cognitivos para programas profesionales y semiprofesionales.</p>
+          </div>
         </div>
       </div>
+    </div>
+
+    <div class="exp-cta fade-up">
+      <a href="#demo" class="btn-outline">
+        <span class="exp-cta-text">Pedí más información</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
     </div>
   </section>
 
@@ -2511,7 +2573,7 @@ tStartObs.observe(tSection);
       'hero.live': 'Entrenamiento en vivo',
       'hero.word1': 'CEREBRO MÁS RÁPIDO', 'hero.word2': 'CUERPO MÁS RÁPIDO',
       'hero.sub': 'Vixon combina un chaleco inteligente con una app de entrenamiento para desarrollar la velocidad de reacción, la atención y la toma de decisiones de los deportistas — en movimiento real, con datos reales.',
-      'hero.cta.primary': 'Pedí una demo', 'hero.cta.secondary': 'Ver cómo funciona',
+      'hero.cta.primary': 'Pedí una demo', 'hero.cta.secondary': 'Pedí más información',
       'hero.pillar1.desc': 'El chaleco inteligente', 'hero.pillar2.desc': 'Control y datos en tiempo real', 'hero.pillar3.desc': 'Ciencia detrás del rendimiento',
       'product.label': '01 — El Sistema',
       'product.title': 'Dos piezas<br><em>Un sistema</em>',
@@ -2546,6 +2608,7 @@ tStartObs.observe(tSection);
       'exp.label': '03 — Experiencia',
       'exp.title': 'Para todo deporte<br>que vive de la<br><em>decisión rápida</em>',
       'exp.body': 'Donde haya que leer el juego, anticiparse y reaccionar en milisegundos, Vixon tiene algo que aportar. El sistema se adapta a las exigencias de cada deporte, posición y ejercicio.',
+      'exp.cta': 'Pedí más información',
       'sport1.name': 'Fútbol', 'sport1.desc': 'Decisión en velocidad', 'sport1.sub': 'La ventana de 3 segundos antes de una presión, un cambio de frente o un contraataque.',
       'sport2.name': 'Futsal', 'sport2.desc': 'Reacción en espacios reducidos', 'sport2.sub': 'Velocidad de decisión en contextos de alta presión y poco espacio disponible.',
       'sport3.name': 'Academia juvenil', 'sport3.desc': 'Desarrollo cognitivo temprano', 'sport3.sub': 'Trabajar la velocidad de decisión desde joven acelera el desarrollo técnico. Los jugadores aprenden a leer el juego antes de que sea instinto.',
@@ -2589,7 +2652,7 @@ tStartObs.observe(tSection);
       'hero.live': 'Live training',
       'hero.word1': 'FASTER BRAIN', 'hero.word2': 'FASTER BODY',
       'hero.sub': 'Vixon combines a smart vest with a training app to develop reaction speed, attention and decision-making in athletes — in real movement, with real data.',
-      'hero.cta.primary': 'Request a demo', 'hero.cta.secondary': 'See how it works',
+      'hero.cta.primary': 'Request a demo', 'hero.cta.secondary': 'Request more info',
       'hero.pillar1.desc': 'The smart vest', 'hero.pillar2.desc': 'Real-time control & data', 'hero.pillar3.desc': 'Science behind performance',
       'product.label': '01 — The System',
       'product.title': 'Two pieces<br><em>One system</em>',
@@ -2624,6 +2687,7 @@ tStartObs.observe(tSection);
       'exp.label': '03 — Experience',
       'exp.title': 'For every sport<br>that lives on<br><em>fast decisions</em>',
       'exp.body': 'Wherever you need to read the game, anticipate and react in milliseconds, Vixon has something to offer. The system adapts to the demands of each sport, position and drill.',
+      'exp.cta': 'Request more info',
       'sport1.name': 'Soccer', 'sport1.desc': 'Speed decisions', 'sport1.sub': 'The 3-second window before a press, a switch of play or a counterattack.',
       'sport2.name': 'Futsal', 'sport2.desc': 'Reaction in tight spaces', 'sport2.sub': 'Decision speed in high-pressure contexts with limited space.',
       'sport3.name': 'Youth academy', 'sport3.desc': 'Early cognitive development', 'sport3.sub': 'Training decision speed from a young age accelerates technical development. Players learn to read the game before it becomes instinct.',
@@ -2764,9 +2828,11 @@ tStartObs.observe(tSection);
     $$('.sport-card').forEach(function(card, i) {
       var k = 'sport' + (i + 1);
       var nm = card.querySelector('.sport-name'); if (nm) nm.textContent = t[k + '.name'];
-      var ds = card.querySelector('.sport-desc'); if (ds) ds.textContent = t[k + '.desc'];
-      var sb = card.querySelector('.sport-subtext'); if (sb) sb.textContent = t[k + '.sub'];
+      var bkn = card.querySelector('.sport-back-name'); if (bkn) bkn.textContent = t[k + '.name'];
+      var ds = card.querySelector('.sport-back-desc'); if (ds) ds.textContent = t[k + '.desc'];
+      var sb = card.querySelector('.sport-back-body'); if (sb) sb.textContent = t[k + '.sub'];
     });
+    var expcta = $('.exp-cta .exp-cta-text'); if (expcta) expcta.textContent = t['exp.cta'];
 
     /* ── Testimonials ── */
     txt('#testimonials .section-label', 'test.label');
@@ -2838,6 +2904,28 @@ tStartObs.observe(tSection);
 
   /* Init on load */
   applyLang(lang);
+})();
+
+/* ── Product feature accordion (tap) ── */
+(function(){
+  document.querySelectorAll('.pc-feat').forEach(function(feat) {
+    feat.addEventListener('click', function() {
+      var wasOpen = feat.classList.contains('open');
+      feat.closest('.pc-features').querySelectorAll('.pc-feat').forEach(function(f) { f.classList.remove('open'); });
+      if (!wasOpen) feat.classList.add('open');
+    });
+  });
+})();
+
+/* ── Sport card tap-to-flip ── */
+(function(){
+  document.querySelectorAll('.sport-card').forEach(function(card) {
+    card.addEventListener('click', function() {
+      var wasFlipped = card.classList.contains('flipped');
+      document.querySelectorAll('.sport-card').forEach(function(c) { c.classList.remove('flipped'); });
+      if (!wasFlipped) card.classList.add('flipped');
+    });
+  });
 })();
 
 /* ── Hero variant switch ── */
