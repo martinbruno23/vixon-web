@@ -360,7 +360,7 @@ section { padding:120px 48px; }
 /* ════════════════════════════════════════
    PRODUCT — FEATURE ROWS
 ════════════════════════════════════════ */
-#product { background:#EDEDEA; border-top:none; padding: 120px 80px 0; position:relative; overflow:hidden; }
+#product { background:#EDEDEA; border-top:none; padding: 90px 80px 80px; position:relative; overflow:hidden; }
 .product-header { padding-bottom:72px; }
 
 .pf-rows { display:flex; flex-direction:column; }
@@ -501,13 +501,17 @@ section { padding:120px 48px; }
 .sport-extra > span { overflow:hidden; display:block; }
 .sport-card:hover .sport-extra { grid-template-rows:1fr; margin-top:10px; }
 
-/* ── Sport card flip ── */
-.sport-card { overflow:visible; perspective:1000px; }
-.flip-inner { position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:transform .65s cubic-bezier(.4,0,.2,1); }
-.sport-card.flipped .flip-inner { transform:rotateY(180deg); }
-@media (hover:hover) { .sport-card:hover .flip-inner { transform:rotateY(180deg); } }
-.flip-front, .flip-back { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; overflow:hidden; }
-.flip-back { transform:rotateY(180deg); background:#0f0f0f; display:flex; flex-direction:column; justify-content:flex-end; padding:28px 24px; }
+/* ── Sport card flip (scaleX fold — sin 3D, sin texto espejado) ── */
+.sport-card { overflow:hidden; }
+.flip-inner { position:relative; width:100%; height:100%; }
+.flip-front { position:absolute; inset:0; overflow:hidden; transform-origin:center; transition:transform .22s ease-in, opacity .2s ease; }
+.flip-back { position:absolute; inset:0; overflow:hidden; background:#0f0f0f; display:flex; flex-direction:column; justify-content:flex-end; padding:28px 24px; transform-origin:center; transform:scaleX(0); opacity:0; transition:transform .22s ease-out .2s, opacity .18s ease .16s; }
+.sport-card.flipped .flip-front { transform:scaleX(0); opacity:0; }
+.sport-card.flipped .flip-back { transform:scaleX(1); opacity:1; }
+@media (hover:hover) {
+  .sport-card:hover .flip-front { transform:scaleX(0); opacity:0; }
+  .sport-card:hover .flip-back { transform:scaleX(1); opacity:1; }
+}
 .sport-back-name { font-family:var(--display-font); font-weight:700; font-size:clamp(18px,2.5vw,26px); color:var(--white); letter-spacing:-.02em; line-height:1.1; margin-bottom:10px; }
 .sport-back-desc { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.14em; color:var(--lime); text-transform:uppercase; margin-bottom:14px; }
 .sport-back-body { font-size:13px; font-weight:300; line-height:1.65; color:rgba(242,242,238,.58); }
@@ -1553,7 +1557,7 @@ body[data-decor="subtle"] .tv-callout.co-D { display: none !important; }
   .nav-hamburger { display:flex; }
   .mobile-menu { display:flex; }
   section { padding:72px 24px; }
-  #product { padding:72px 24px 0; }
+  #product { padding:64px 0 56px; }
 
   .hero-content { padding:0 24px 64px; max-width:100%; }
   .hero-headline { font-size:clamp(32px,9vw,48px); text-wrap:pretty; }
@@ -1596,7 +1600,6 @@ body[data-decor="subtle"] .tv-callout.co-D { display: none !important; }
   .who-cards { grid-template-columns:1fr; }
   .who-card { padding:32px 24px; }
 
-  #product { padding:72px 0 0; }
   .product-cards { grid-template-columns:1fr; }
   .pc-grid { grid-template-columns:1fr; gap:16px; }
   .pc-visual { height:360px; }
@@ -1832,7 +1835,7 @@ body[data-decor="subtle"] .tv-callout.co-D { display: none !important; }
 
 
   <!-- ══════ PRODUCT ══════ -->
-  <section id="product" style="padding: 90px 80px 80px">
+  <section id="product">
 
     <!-- Decorative rings -->
     <div class="deco-rings deco-rings-dark" style="top:-60px; right:22%;" aria-hidden="true"></div>
